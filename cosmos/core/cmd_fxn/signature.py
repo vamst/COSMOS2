@@ -8,7 +8,7 @@ def get_call_kwargs(cmd_fxn, params, input_map, output_map):
     sig = funcsigs.signature(cmd_fxn)
 
     def gen_params():
-        for keyword, param in sig.parameters.iteritems():
+        for keyword, param in sig.parameters.items():
             if keyword in input_map:
                 yield keyword, input_map[keyword]
             elif keyword in output_map:
@@ -23,7 +23,7 @@ def get_call_kwargs(cmd_fxn, params, input_map, output_map):
                         'method signature, or pass a value for `%s` with a tag' % (cmd_fxn, keyword, keyword))
 
     #TODO dont format with params?
-    kwargs = {k: v.format(**params) if isinstance(v, basestring) else v for k, v in gen_params()}
+    kwargs = {k: v.format(**params) if isinstance(v, str) else v for k, v in gen_params()}
     return kwargs
 
 
@@ -62,7 +62,7 @@ def default_cmd_fxn_wrapper(task, stage_name, input_map, output_map, cd_to_task_
 
     def real_decorator(fxn, *args, **kwargs):
         r = fxn(*args, **kwargs)
-        assert isinstance(r, basestring) or r is None, 'cmd_fxn %s did not return a str or None' % fxn
+        assert isinstance(r, str) or r is None, 'cmd_fxn %s did not return a str or None' % fxn
         if r is None:
             return None
         else:
