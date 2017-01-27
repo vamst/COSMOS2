@@ -157,4 +157,4 @@ def group(tasks_or_tuples, by):
 
 
 def make_params(new_params, tag):
-    return new_params.update({k: v.format(**new_params) if isinstance(v, str) else v for k, v in tag.items()})
+    return new_params.update({k: v.format(**new_params) if isinstance(v, str) else v for k, v in list(tag.items())})
