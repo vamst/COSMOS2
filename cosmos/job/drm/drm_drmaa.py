@@ -34,9 +34,8 @@ class DRM_DRMAA(DRM):
             try:
                 drm_jobID = get_drmaa_session().runJob(jt)
             except BaseException:
-                print >>sys.stderr, \
-                    "Couldn't run %s with nativeSpecification=`%s`" % \
-                    (task, jt.nativeSpecification)
+                print("Couldn't run %s with nativeSpecification=`%s`" % \
+                    (task, jt.nativeSpecification), file=sys.stderr)
                 raise
 
         return drm_jobID
@@ -53,7 +52,7 @@ class DRM_DRMAA(DRM):
                 drmaa_jobinfo = get_drmaa_session().wait(jobId=drmaa.Session.JOB_IDS_SESSION_ANY, timeout=1)._asdict()
                 # enable_stderr()
 
-                yield jobid_to_task.pop(unicode(drmaa_jobinfo['jobId'])), \
+                yield jobid_to_task.pop(str(drmaa_jobinfo['jobId'])), \
                       parse_drmaa_jobinfo(drmaa_jobinfo)
 
             except drmaa.errors.ExitTimeoutException:
@@ -90,23 +89,23 @@ class DRM_DRMAA(DRM):
                     raise
 
                 # "code 24: no usage information was returned for the completed job"
-                print >>sys.stderr, 'drmaa raised a naked Exception while ' \
+                print('drmaa raised a naked Exception while ' \
                                     'fetching job status - an existing job may ' \
-                                    'have been killed'
+                                    'have been killed', file=sys.stderr)
                 #
                 # Check the status of each outstanding job and fake
                 # a failure status for any that have gone missing.
                 #
-                for jobid in jobid_to_task.keys():
+                for jobid in list(jobid_to_task.keys()):
                     try:
-                        drmaa_jobstatus = get_drmaa_session().jobStatus(unicode(jobid))
+                        drmaa_jobstatus = get_drmaa_session().jobStatus(str(jobid))
                     except drmaa.errors.InvalidJobException:
                         drmaa_jobstatus = drmaa.JobState.UNDETERMINED
                     except Exception:
                         drmaa_jobstatus = drmaa.JobState.UNDETERMINED
 
                     if drmaa_jobstatus == drmaa.JobState.UNDETERMINED:
-                        print >>sys.stderr, 'job %s is missing and presumed dead' % jobid
+                        print('job %s is missing and presumed dead' % jobid, file=sys.stderr)
                         yield jobid_to_task.pop(jobid), \
                               create_empty_drmaa_jobinfo(os.EX_TEMPFAIL)
 
@@ -115,7 +114,7 @@ class DRM_DRMAA(DRM):
 
         def get_status(task):
             try:
-                return self.decodestatus[get_drmaa_session().jobStatus(unicode(task.drm_jobID))] if task.drm_jobID is not None else '?'
+                return self.decodestatus[get_drmaa_session().jobStatus(str(task.drm_jobID))] if task.drm_jobID is not None else '?'
             except drmaa.errors.InvalidJobException:
                 return '?'
             except:
@@ -129,7 +128,7 @@ class DRM_DRMAA(DRM):
 
         if task.drm_jobID is not None:
             try:
-                get_drmaa_session().control(unicode(task.drm_jobID), drmaa.JobControlAction.TERMINATE)
+                get_drmaa_session().control(str(task.drm_jobID), drmaa.JobControlAction.TERMINATE)
             except drmaa.errors.InvalidJobException:
                 pass
 
