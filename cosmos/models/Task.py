@@ -32,7 +32,7 @@ class ToolValidationError(Exception): pass
 class GetOutputError(Exception): pass
 
 
-task_failed_printout = u"""Failure Info:
+task_failed_printout = """Failure Info:
 <EXIT_STATUS="{0.exit_status}">
 <COMMAND path="{0.output_command_script_path}" drm_jobID="{0.drm_jobID}">
 <PARAMS>
@@ -178,11 +178,11 @@ class Task(Base):
 
     @property
     def input_files(self):
-        return self.input_map.values()
+        return list(self.input_map.values())
 
     @property
     def output_files(self):
-        return self.output_map.values()
+        return list(self.output_map.values())
 
     # command = Column(Text)
 
@@ -299,14 +299,14 @@ class Task(Base):
     def label(self):
         """Label used for the taskgraph image"""
         params = '' if len(self.params) == 0 else "\\n {0}".format(
-                "\\n".join(["{0}: {1}".format(k, v) for k, v in self.params.items()]))
+                "\\n".join(["{0}: {1}".format(k, v) for k, v in list(self.params.items())]))
 
         return "[%s] %s%s" % (self.id, self.stage.name, params)
 
     def args_as_query_string(self):
-        import urllib
+        import urllib.request, urllib.parse, urllib.error
 
-        return urllib.urlencode(self.params)
+        return urllib.parse.urlencode(self.params)
 
     def delete(self, delete_files=False):
         self.log.debug('Deleting %s' % self)
@@ -325,7 +325,7 @@ class Task(Base):
 
     @property
     def params_pretty(self):
-        return '%s' % ', '.join('%s=%s' % (k, "'%s'" % v if isinstance(v, basestring) else v) for k, v in self.params.items())
+        return '%s' % ', '.join('%s=%s' % (k, "'%s'" % v if isinstance(v, str) else v) for k, v in list(self.params.items()))
 
     @property
     def params_pformat(self):
