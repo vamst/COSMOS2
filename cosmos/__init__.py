@@ -30,7 +30,7 @@ def recursive_resolve_dependency(parameter):
     """
     if isinstance(parameter, Dependency):
         return parameter.resolve(), {parameter.task}
-    elif type(parameter) in (bool, float, int, long, str, unicode, types.NoneType):
+    elif type(parameter) in (bool, float, int, int, str, str, type(None)):
         return parameter, set()
     elif type(parameter) == list:
         tuple_list = list(recursive_resolve_dependency(v) for v in parameter)
@@ -39,9 +39,9 @@ def recursive_resolve_dependency(parameter):
         tuple_tuple = tuple(recursive_resolve_dependency(v) for v in parameter)
         return tuple(rds for (rds, _) in tuple_tuple), set.union(*[tasks for _, tasks in tuple_tuple]) if len(tuple_tuple) else set()
     elif type(parameter) == dict:
-        tuple_dict = {k: recursive_resolve_dependency(v) for k, v in parameter.iteritems()}
-        return ({k: rds for k, (rds, _) in tuple_dict.iteritems()},
-                set.union(*[tasks for _, tasks in tuple_dict.itervalues()]) if len(tuple_dict) else set())
+        tuple_dict = {k: recursive_resolve_dependency(v) for k, v in parameter.items()}
+        return ({k: rds for k, (rds, _) in tuple_dict.items()},
+                set.union(*[tasks for _, tasks in tuple_dict.values()]) if len(tuple_dict) else set())
     else:
         raise ValueError('Cannot handle parameter of type {}'.format(type(parameter)))
 
