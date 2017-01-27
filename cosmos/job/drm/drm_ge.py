@@ -26,7 +26,7 @@ class DRM_GE(DRM):
         out = sp.check_output('{qsub} "{cmd_str}"'.format(cmd_str=task.output_command_script_path, qsub=qsub),
                               env=os.environ, preexec_fn=exit_process_group, shell=True)
 
-        drm_jobID = unicode(re.search('job (\d+) ', out).group(1))
+        drm_jobID = str(re.search('job (\d+) ', out).group(1))
         return drm_jobID
 
     def filter_is_done(self, tasks):
@@ -44,7 +44,7 @@ class DRM_GE(DRM):
             corrupt_data = {}
 
         for task in tasks:
-            jid = unicode(task.drm_jobID)
+            jid = str(task.drm_jobID)
             if jid not in qjobs or \
                any(finished_state in qjobs[jid]['state'] for finished_state in ['e', 'E']):
                 #
@@ -64,12 +64,12 @@ class DRM_GE(DRM):
         num_cleanly_running_jobs = len(tasks) - len(corrupt_data)
 
         if num_cleanly_running_jobs > 0:
-            for task in corrupt_data.keys():
+            for task in list(corrupt_data.keys()):
                 task.workflow.log.info(
                     'temporarily masking corrupt SGE data for %s since %d other jobs are running cleanly' %
                     (task, num_cleanly_running_jobs))
         else:
-            for task, data in corrupt_data.items():
+            for task, data in list(corrupt_data.items()):
                 task.workflow.log.error(
                     'all outstanding drm_ge tasks had corrupt SGE data: giving up on %s' % task)
                 yield task, data
@@ -83,7 +83,7 @@ class DRM_GE(DRM):
             qjobs = _qstat_all()
 
             def f(task):
-                return qjobs.get(unicode(task.drm_jobID), dict()).get('state', '???')
+                return qjobs.get(str(task.drm_jobID), dict()).get('state', '???')
 
             return {task.drm_jobID: f(task) for task in tasks}
         else:
@@ -149,8 +149,8 @@ class DRM_GE(DRM):
 
     def kill_tasks(self, tasks):
         for group in grouper(50, tasks):
-            group = filter(lambda x: x is not None, group)
-            pids = ','.join(map(lambda t: unicode(t.drm_jobID), group))
+            group = [x for x in group if x is not None]
+            pids = ','.join([str(t.drm_jobID) for t in group])
             sp.call(['qdel', pids], preexec_fn=exit_process_group)
 
 
@@ -189,7 +189,7 @@ def _qacct_raw(task, timeout=600):
             if time.time() - start > timeout:
                 raise ValueError('Could not qacct -j %s' % task.drm_jobID)
             try:
-                qacct_out = sp.check_output(['qacct', '-j', unicode(task.drm_jobID)], preexec_fn=exit_process_group, stderr=DEVNULL)
+                qacct_out = sp.check_output(['qacct', '-j', str(task.drm_jobID)], preexec_fn=exit_process_group, stderr=DEVNULL)
                 if len(qacct_out.strip()):
                     break
                 else:
@@ -238,5 +238,5 @@ def _qstat_all():
     bjobs = {}
     for l in lines[2:]:
         items = re.split("\s+", l.strip())
-        bjobs[items[0]] = dict(zip(keys, items))
-return bjobs
+        bjobs[items[0]] = dict(list(zip(keys, items)))
+    return bjobs
