@@ -98,7 +98,7 @@ class SignalWatcher(object):
 
     def explain(self, signum):
         names = []
-        for k, v in signal.__dict__.iteritems():
+        for k, v in signal.__dict__.items():
             if k.startswith('SIG') and v == signum:
                 names.append(k)
         names.sort()
@@ -110,7 +110,7 @@ class SignalWatcher(object):
 
     def log_signal(self, signum, frame):    # pylint: disable=unused-argument
         msg = "Caught signal %d (%s)" % (signum, self.explain(signum))
-        print >>sys.stderr, msg
+        print(msg, file=sys.stderr)
         sys.stderr.flush()
         self.workflow.log.info(msg)
 
@@ -179,7 +179,7 @@ class Workflow(Base):
         # FIXME provide the cosmos_app instance?
 
         if manual_instantiation:
-            raise TypeError, 'Do not instantiate an Workflow manually.  Use the Cosmos.start method.'
+            raise TypeError('Do not instantiate an Workflow manually.  Use the Cosmos.start method.')
         super(Workflow, self).__init__(*args, **kwargs)
         # assert self.output_dir is not None, 'output_dir cannot be None'
         if self.info is None:
@@ -195,7 +195,7 @@ class Workflow(Base):
         return get_logger('cosmos-%s' % Workflow.name, (self.primary_log_path or 'workflow.log'))
 
     def make_output_dirs(self):
-        dirs = {os.path.dirname(p) for t in self.tasks for p in t.output_map.values() if p is not None}
+        dirs = {os.path.dirname(p) for t in self.tasks for p in list(t.output_map.values()) if p is not None}
         for d in dirs:
             mkdir(d)
 
@@ -231,7 +231,7 @@ class Workflow(Base):
         # params
         if params is None:
             params = dict()
-        for k, v in params.iteritems():
+        for k, v in params.items():
             # decompose `Dependency` objects to values and parents
             new_val, parent_tasks = recursive_resolve_dependency(v)
 
@@ -240,11 +240,11 @@ class Workflow(Base):
 
         # uid
         if uid is None:
-            raise AssertionError, 'uid parameter must be specified'
+            raise AssertionError('uid parameter must be specified')
             # Fix me assert params are all JSONable
             # uid = str(params)
         else:
-            assert isinstance(uid, basestring), 'uid must be a string'
+            assert isinstance(uid, str), 'uid must be a string'
 
         if stage_name is None:
             stage_name = str(func.__name__)
@@ -285,7 +285,7 @@ class Workflow(Base):
             input_map = dict()
             output_map = dict()
 
-            for keyword, param in sig.parameters.iteritems():
+            for keyword, param in sig.parameters.items():
                 if keyword.startswith('in_'):
                     v = params.get(keyword, param.default)
                     assert v != funcsigs._empty, 'parameter %s for %s is required' % (param, func)
@@ -407,7 +407,7 @@ class Workflow(Base):
         session.add(self)
         # session.add_all(stage_g.nodes())
         # session.add_all(task_g.nodes())
-        successful = filter(lambda t: t.successful, task_graph.nodes())
+        successful = [t for t in task_graph.nodes() if t.successful]
 
         # print stages
         for s in sorted(self.stages, key=lambda s: s.number):
@@ -537,10 +537,10 @@ class Workflow(Base):
         if delete_files:
             raise NotImplementedError('This should delete all Task.output_files')
 
-        print >> sys.stderr, '%s Deleting from SQL...' % self
+        print('%s Deleting from SQL...' % self, file=sys.stderr)
         self.session.delete(self)
         self.session.commit()
-        print >> sys.stderr, '%s Deleted' % self
+        print('%s Deleted' % self, file=sys.stderr)
 
 
 # @event.listens_for(Workflow, 'before_delete')
@@ -611,7 +611,7 @@ import networkx as nx
 
 def _run_queued_and_ready_tasks(task_queue, workflow):
     max_cores = workflow.max_cores
-    ready_tasks = [task for task, degree in task_queue.in_degree().items() if
+    ready_tasks = [task for task, degree in list(task_queue.in_degree().items()) if
                    degree == 0 and task.status == TaskStatus.no_attempt]
 
     if max_cores is None:
