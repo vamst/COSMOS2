@@ -32,12 +32,10 @@ class DRM_GE(DRM):
     def filter_is_done(self, tasks):
         """
         Yield a dictionary of SGE job metadata for each task that has completed.
-
         This method tries to be defensive against corrupt qstat and qacct output.
         If qstat reports that a job has finished, but qacct output looks
         suspicious, we try to give the job, and/or SGE, time to complete and/or
         recover.
-
         This method will only yield corrupt qacct data if every outstanding task
         has been affected by this SGE bug.
         """
@@ -94,7 +92,6 @@ class DRM_GE(DRM):
     def _get_task_return_data(self, task):
         """
         Convert raw qacct job data into Cosmos's more portable format.
-
         Returns a 2-tuple comprising:
         [0] a dictionary of job metadata,
         [1] a boolean indicating whether the metadata in [0] are affected by an
@@ -160,16 +157,12 @@ class DRM_GE(DRM):
 def _is_corrupt(qacct_dict):
     """
     qacct may return multiple records for a job. They may all be corrupt. Yuk.
-
     This was allegedly fixed in 6.0u10 but we've seen it in UGE 8.3.1.
-
     http://osdir.com/ml/clustering.gridengine.users/2007-11/msg00397.html
-
     When multiple records are returned, the first one(s) may have corrupt data.
     UPDATE: this can happen even when only one block is returned, and we've also
     seen cases where multiple blocks are returned and not one is reliable. This
     function checks for values whose presence means an entire block is corrupt.
-
     Note that qacct may return a date that precedes the Epoch (!), depending on
     the $TZ env. variable. To be safe we check for dates within 24 hours of it.
     """
@@ -183,7 +176,6 @@ def _is_corrupt(qacct_dict):
 def _qacct_raw(task, timeout=600):
     """
     Parse qacct output into key/value pairs.
-
     If qacct reports results in multiple blocks (separated by a row of ===='s),
     the most recently-generated block with valid data is returned. If no such
     block exists, then return the most recently-generated block of corrupt data.
@@ -247,6 +239,4 @@ def _qstat_all():
     for l in lines[2:]:
         items = re.split("\s+", l.strip())
         bjobs[items[0]] = dict(zip(keys, items))
-    return bjobs
-
-
+return bjobs
