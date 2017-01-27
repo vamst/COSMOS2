@@ -28,6 +28,10 @@ opj = os.path.join
 from .. import TaskStatus, StageStatus, WorkflowStatus, signal_workflow_status_change
 from .Task import Task
 
+class MyRelationship(relationship):
+    def __lt__(self, other): return True
+       # return ("%s, %s" % (self.last, self.first) <
+       #         "%s, %s" % (other.last, other.first))
 
 def default_task_log_output_dir(task, subdir=''):
     """The default function for computing Task.log_output_dir"""
@@ -147,7 +151,7 @@ class Workflow(Base):
     info = Column(MutableDict.as_mutable(JSONEncodedDict))
     # recipe_graph = Column(PickleType)
     _status = Column(Enum34_ColumnType(WorkflowStatus), default=WorkflowStatus.no_attempt)
-    stages = relationship("Stage", cascade="all, merge, delete-orphan", order_by="Stage.number", passive_deletes=True,
+    stages = MyRelationship("Stage", cascade="all, merge, delete-orphan", order_by="Stage.number", passive_deletes=True,
                           backref='workflow')
 
     exclude_from_dict = ['info']
