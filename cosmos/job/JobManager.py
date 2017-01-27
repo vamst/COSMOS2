@@ -58,7 +58,7 @@ class JobManager(object):
             assert task.drm is not None, 'task has no drm set'
 
             drm_jobID = self.get_drm(task.drm).submit_job(task)
-            assert isinstance(drm_jobID, unicode)
+            assert isinstance(drm_jobID, str)
             task.drm_jobID = drm_jobID
 
         task.status = TaskStatus.submitted
@@ -69,12 +69,12 @@ class JobManager(object):
         # Run the cmd_fxns in parallel, but do not submit any jobs they return
         # Note we use the cosmos_app thread_pool here so we don't have to setup/teardown threads (or their sqlalchemy sessions)
         # commands = self.cosmos_app.thread_pool.map(self.call_cmd_fxn, tasks)
-        commands = map(self.call_cmd_fxn, tasks)
+        commands = list(map(self.call_cmd_fxn, tasks))
         # commands = self.cosmos_app.futures_executor.map(self.call_cmd_fxn, tasks)
 
         # Submit the jobs in serial
         # TODO parallelize this for speed.  Means having all ORM stuff outside Job Submission.
-        map(self.submit_task, tasks, commands)
+        list(map(self.submit_task, tasks, commands))
 
     def terminate(self):
         get_drm = lambda t: t.drm
@@ -100,7 +100,7 @@ class JobManager(object):
         for drm, tasks in it.groupby(sorted(self.running_tasks, key=f), f):
             for task, job_info_dict in self.get_drm(drm).filter_is_done(list(tasks)):
                 self.running_tasks.remove(task)
-                for k, v in job_info_dict.items():
+                for k, v in list(job_info_dict.items()):
                     setattr(task, k, v)
                 yield task
 
