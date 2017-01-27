@@ -87,6 +87,11 @@ class Stage(Base):
     def __iter__(self):
         for t in self.tasks:
             yield t
+    
+    def __lt__(self, other):
+        return True
+        # return ("%s, %s" % (self.last, self.first) <
+        #          "%s, %s" % (other.last, other.first))
 
     def __getitem__(self, key):
         return self.tasks[key]
