@@ -121,4 +121,3 @@ def _create_command_sh(task, command):
     for p in [task.output_stdout_path, task.output_stderr_path]:
         if os.path.exists(p):
             os.unlink(p)
-
