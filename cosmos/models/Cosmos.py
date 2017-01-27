@@ -18,7 +18,6 @@ def default_get_submit_args(task, parallel_env='orte'):
     Default method for determining the extra arguments to pass to the DRM.
     For example, returning `"-n 3" if` `task.drm == "lsf"` would cause all jobs
     to be submitted with `bsub -n 3`.
-
     :param cosmos.api.Task task: The Task being submitted.
     :rtype: str
     """
@@ -120,7 +119,6 @@ class Cosmos(object):
     def start(self, name, restart=False, skip_confirm=False, primary_log_path=None, fail_fast=False):
         """
         Start, resume, or restart an workflow based on its name.  If resuming, deletes failed tasks.
-
         :param str name: A name for the workflow.  Must be unique for this Cosmos session.
         :param bool restart: If True and the workflow exists, delete it first.
         :param bool skip_confirm: (If True, do not prompt the shell for input before deleting workflows or files.
@@ -128,7 +126,6 @@ class Cosmos(object):
           stderr.
         :param bool fail_fast: If True, terminate the workflow the first time a Task fails.
         Otherwise, run all Tasks except those downstream of a failure.
-
         :returns: An Workflow instance.
         """
         from .Workflow import Workflow
