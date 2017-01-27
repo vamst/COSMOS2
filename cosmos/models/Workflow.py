@@ -29,7 +29,11 @@ from .. import TaskStatus, StageStatus, WorkflowStatus, signal_workflow_status_c
 from .Task import Task
 
 class MyRelationship(relationship):
-    def __lt__(self, other): return True
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        
+    def __lt__(self, other):
+        return True
        # return ("%s, %s" % (self.last, self.first) <
        #         "%s, %s" % (other.last, other.first))
 
