@@ -103,11 +103,11 @@ class Stage(Base):
 
     def num_successful_tasks(self):
         # return self.tasksq.filter_by(stage=self, successful=True).count()
-        return len(filter(lambda t: t.successful, self.tasks))
+        return len([t for t in self.tasks if t.successful])
 
     def num_failed_tasks(self):
         # return self.tasksq.filter_by(stage=self, status=TaskStatus.failed).count()
-        return len(filter(lambda t: t.status == TaskStatus.failed, self.tasks))
+        return len([t for t in self.tasks if t.status == TaskStatus.failed])
 
     @property
     def url(self):
@@ -137,7 +137,7 @@ class Stage(Base):
         self.session.commit()
 
     def filter_tasks(self, **filter_by):
-        return (t for t in self.tasks if all(t.params.get(k, None) == v for k, v in filter_by.items()))
+        return (t for t in self.tasks if all(t.params.get(k, None) == v for k, v in list(filter_by.items())))
 
     def get_task(self, uid, default='ERROR@#$'):
         for task in self.tasks:
