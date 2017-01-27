@@ -26,4 +26,4 @@ def qstat(user=getpass.getuser()):
         return pd.DataFrame()
 
     dicts = list( job_list_to_dict(jl) for jl in et.findall('.//job_list') )
-    return pd.DataFrame.from_dict(dicts)[dicts[0].keys()]
+    return pd.DataFrame.from_dict(dicts)[list(dicts[0].keys())]
