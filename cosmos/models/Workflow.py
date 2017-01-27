@@ -51,20 +51,15 @@ def _workflow_status_changed(ex):
 class SignalWatcher(object):
     """
     Monitors the specified signals and sets an Event when one is caught.
-
     Depending on its configuration, SGE can send a SIGUSR1, SIGUSR2, and/or
     SIGXCPU before sending SIGSTOP/SIGKILL signals which cannot be caught.
-
     According to ``man qsub`` (search for -notify), SGE can:
-
     > send "warning" signals to a running job prior to sending the
     > signals themselves. If a SIGSTOP is pending, the job will
     > receive a SIGUSR1 several seconds before the SIGSTOP. If a
     > SIGKILL is pending, the job will receive a SIGUSR2 several
     > seconds before the SIGKILL.
-
     acording to ``man queue_conf``, SGE additionally can:
-
     > If s_cpu is exceeded, the job is sent a SIGXCPU signal which
     > can be caught by the job.... If s_vmem is exceeded, the job
     > is sent a SIGXCPU signal which can be caught by the job....
@@ -207,7 +202,6 @@ class Workflow(Base):
     def add_task(self, func, params=None, parents=None, stage_name=None, uid=None, drm=None, queue=None, must_succeed=True, time_req=None):
         """
         Adds a new Task to the Workflow.  If the Task already exists (and was successful), return the successful Task stored in the database
-
         :param callable func: A function which returns a string which will get converted to a shell script to be executed.  `func` will not get called until
           all of its dependencies have completed.
         :param dict params: Parameters to `func`.  Must be jsonable so that it can be stored in the database.  Any Dependency objects will get resolved into
@@ -330,7 +324,6 @@ class Workflow(Base):
             log_out_dir_func=default_task_log_output_dir):
         """
         Runs this Workflow's DAG
-
         :param int max_cores: The maximum number of cores to use at once.  A value of None indicates no maximum.
         :param int max_attempts: The maximum number of times to retry a failed job.
         :param callable log_out_dir_func: A function that returns a Task's logging directory (must be unique).
@@ -340,7 +333,6 @@ class Workflow(Base):
         :param bool dry: If True, do not actually run any jobs.
         :param bool set_successful: Sets this workflow as successful if all tasks finish without a failure.  You might set this to False if you intend to add and
             run more tasks in this workflow later.
-
         """
         assert os.path.exists(os.getcwd()), 'current working dir does not exist! %s' % os.getcwd()
 
