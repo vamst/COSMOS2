@@ -8,7 +8,7 @@ def get_call_kwargs(cmd_fxn, params, input_map, output_map):
     sig = funcsigs.signature(cmd_fxn)
 
     def gen_params():
-        for keyword, param in sig.parameters.items():
+        for keyword, param in list(sig.parameters.items()):
             if keyword in input_map:
                 yield keyword, input_map[keyword]
             elif keyword in output_map:
@@ -33,10 +33,8 @@ import decorator
 def default_prepend(task):  # pylint: disable=unused-argument
     """
     Set common error- and signal-handling behavior for Cosmos Tasks.
-
     set -e and set -o will cause Tasks that run multiple commands to error out at the
     first sign of failure, even if the failure occurs in a multiple-step pipe.
-
     the trap command is so that Tasks ignore three SGE signals that are handled by the Cosmos
     runtime (see commment on Workflow.py:SignalWatcher for more details).
     """
@@ -53,7 +51,6 @@ def default_prepend(task):  # pylint: disable=unused-argument
 def default_cmd_fxn_wrapper(task, stage_name, input_map, output_map, cd_to_task_output_dir=True):
     """
     WARNING this function signature is not set in stone yet and may change, replace at your own risk.
-
     :param task:
     :param input_map:
     :param output_map:
