@@ -611,8 +611,12 @@ import networkx as nx
 
 def _run_queued_and_ready_tasks(task_queue, workflow):
     max_cores = workflow.max_cores
-    ready_tasks = [task for task, degree in list(task_queue.in_degree().items()) if
-                   degree == 0 and task.status == TaskStatus.no_attempt]
+    
+    # ready_tasks = [task for task, degree in list(task_queue.in_degree().items()) if
+    #               degree == 0 and task.status == TaskStatus.no_attempt]
+    
+    ready_tasks = [task for task, degree in task_queue.in_degree().items() if
+                    degree == 0 and task.status == TaskStatus.no_attempt]
 
     if max_cores is None:
         submittable_tasks = ready_tasks
