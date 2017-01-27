@@ -25,7 +25,7 @@ class DRM_Local(DRM):
                          shell=False, env=os.environ,
                          preexec_fn=exit_process_group)
         p.start_time = time.time()
-        drm_jobID = unicode(p.pid)
+        drm_jobID = str(p.pid)
         self.procs[drm_jobID] = p
         return drm_jobID
 
