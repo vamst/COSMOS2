@@ -38,10 +38,10 @@ install_requires = [
     'psutil',
     "drmaa",
     'more_itertools',
-     'networkx', 
+    'networkx', 
 ],
 dependency_links = [
-  'git+https://github.com/networkx/networkx#egg=networkx',
+  'git+https://github.com/vamst/networkx#egg=networkx',
 ],
 
 if sys.version_info < (3,):
