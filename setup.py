@@ -32,14 +32,17 @@ install_requires = [
     "sqlalchemy",
     "black_magic>=0.0.10",  # to get a signature preserving partial() in cosmos.api
     'flask-sqlalchemy',
-    'networkx',
     "enum34",
     "six",
     "SQLAlchemy-Utils",
     'psutil',
     "drmaa",
-    'more_itertools'
-]
+    'more_itertools',
+     'networkx', 
+],
+dependency_links = [
+  'git+https://github.com/networkx/networkx#egg=networkx',
+],
 
 if sys.version_info < (3,):
     # package_dir = {'': 'cosmos'}
