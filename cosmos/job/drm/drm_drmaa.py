@@ -251,4 +251,4 @@ def create_empty_drmaa_jobinfo(exit_status):
         avg_num_fds=None,
         max_num_fds=None,
         memory=0.0
-    )
+)
