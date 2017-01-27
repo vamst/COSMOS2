@@ -49,7 +49,7 @@ def gen_bprint(session):
         stage = session.query(Stage).filter_by(workflow_id=ex.id, name=stage_name).one()
         if stage is None:
             return abort(404)
-        submitted = filter(lambda t: t.status == TaskStatus.submitted, stage.tasks)
+        submitted = [t for t in stage.tasks if t.status == TaskStatus.submitted]
         jm = JobManager(get_submit_args=None)
 
         f = attrgetter('drm')
