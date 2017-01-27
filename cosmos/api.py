@@ -127,7 +127,7 @@ def bash_call(func, *args, **kwargs):
     import inspect
 
     sig = funcsigs.signature(func)
-    kwargs = dict(zip(sig.parameters.keys(), args))
+    kwargs = dict(list(zip(list(sig.parameters.keys()), args)))
 
     return r"""
 python - <<EOF
