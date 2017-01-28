@@ -114,7 +114,7 @@ class JobManager(object):
 
 def _create_command_sh(task, command):
     """Create a sh script that will execute a command"""
-    with open(task.output_command_script_path, 'wb') as f:
+    with open(task.output_command_script_path, 'w') as f:
         f.write(command)
     os.system('chmod 755 "{0}"'.format(task.output_command_script_path))
 
