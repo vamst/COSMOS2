@@ -40,9 +40,7 @@ install_requires = [
     'more_itertools',
     'networkx', 
 ],
-dependency_links = [
-  'git+https://github.com/vamst/networkx#egg=networkx',
-],
+
 
 if sys.version_info < (3,):
     # package_dir = {'': 'cosmos'}
