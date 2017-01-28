@@ -39,7 +39,7 @@ install_requires = [
     "drmaa",
     'more_itertools',
     'networkx', 
-],
+]
 
 
 if sys.version_info < (3,):
