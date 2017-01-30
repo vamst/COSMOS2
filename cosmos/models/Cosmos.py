@@ -3,7 +3,6 @@ from flask import Flask, g
 import sys
 import os
 from ..util.helpers import get_logger, mkdir, confirm, str_format
-import itertools as it
 from ..util.args import get_last_cmd_executed
 from ..db import Base
 from .. import __version__
@@ -186,7 +185,7 @@ class Cosmos(object):
                 for t in failed_tasks:
                     session.delete(t)
 
-            for stage in it.filter(lambda s: len(s.tasks) == 0, wf.stages):
+            for stage in filter(lambda s: len(s.tasks) == 0, wf.stages):
                 wf.log.info('Deleting stage %s, since it has 0 successful Tasks' % stage)
                 session.delete(stage)
 
