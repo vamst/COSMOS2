@@ -186,7 +186,7 @@ class Cosmos(object):
                 for t in failed_tasks:
                     session.delete(t)
 
-            for stage in it.ifilter(lambda s: len(s.tasks) == 0, wf.stages):
+            for stage in it.filter(lambda s: len(s.tasks) == 0, wf.stages):
                 wf.log.info('Deleting stage %s, since it has 0 successful Tasks' % stage)
                 session.delete(stage)
 
