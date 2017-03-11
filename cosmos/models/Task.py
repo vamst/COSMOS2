@@ -229,7 +229,8 @@ class Task(Base):
     avg_num_fds = Column(Integer)
     max_num_fds = Column(Integer)
 
-    extra = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
+    #extra = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
+    extra = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='')
 
     @declared_attr
     def status(cls):
