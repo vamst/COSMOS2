@@ -146,7 +146,8 @@ class Workflow(Base):
     max_attempts = Column(Integer, default=1)
     info = Column(MutableDict.as_mutable(JSONEncodedDict))
     # recipe_graph = Column(PickleType)
-    _status = Column(Enum34_ColumnType(WorkflowStatus)(255), default=WorkflowStatus.no_attempt)
+    #_status = Column(Enum34_ColumnType(WorkflowStatus)(255), default=WorkflowStatus.no_attempt)
+    _status = Column(String(255), default=WorkflowStatus.no_attempt)
     stages = relationship("Stage", cascade="all, merge, delete-orphan", order_by="Stage.number", passive_deletes=True,
                           backref='workflow')
 
