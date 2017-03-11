@@ -174,9 +174,11 @@ class Task(Base):
                            cascade="save-update, merge, delete",
                            )
 
-    input_map = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
-    output_map = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
-
+    #input_map = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
+    #output_map = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
+    input_map = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='')
+    output_map = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='')
+    
     @property
     def input_files(self):
         return list(self.input_map.values())
