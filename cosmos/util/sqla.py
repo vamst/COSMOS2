@@ -7,7 +7,7 @@ class Enum34_ColumnType(types.TypeDecorator):
     Enum compatible with enum34 package
     """
 
-    impl = types.String
+    impl = types.String(255)
 
     def __init__(self, enum_class, *args, **kwargs):
         self.enum_class = enum_class
