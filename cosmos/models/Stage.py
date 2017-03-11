@@ -55,7 +55,7 @@ class Stage(Base):
     started_on = Column(DateTime)
     finished_on = Column(DateTime)
     successful = Column(Boolean, nullable=False, default=False)
-    _status = Column(Enum34_ColumnType(StageStatus), default=StageStatus.no_attempt)
+    _status = Column(Enum34_ColumnType(StageStatus)(255), default=StageStatus.no_attempt)
     parents = relationship("Stage",
                            secondary=StageEdge.__table__,
                            primaryjoin=id == StageEdge.parent_id,
