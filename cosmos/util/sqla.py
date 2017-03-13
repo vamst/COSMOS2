@@ -71,8 +71,8 @@ class JSONEncodedDict(TypeDecorator):
         return value
 
     def process_result_value(self, value, dialect):
-        # return json.loads(value)
-        return json.loads(value.decode("utf-8"))
+        if value != '':
+            return json.loads(value)
 
 
 class MutableDict(Mutable, dict):
