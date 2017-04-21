@@ -28,10 +28,11 @@ class DRM_MXQ(DRM):
             stderr=task.output_stderr_path,
             ns=ns)
 
-        out = sp.check_output('{bsub} "{cmd_str}"'.format(cmd_str=self.jobmanager.get_command_str(task), bsub=bsub),
-                              env=os.environ,
-                              preexec_fn=exit_process_group,
-                              shell=True)
+        out = sp.check_output('{bsub} "{cmd_str}"'.format(
+            cmd_str=self.jobmanager.get_command_str(task), bsub=bsub),
+              env=os.environ,
+              preexec_fn=exit_process_group,
+              shell=True)
 
         drm_jobID = int(re.search('mxq_job_id=(\d+)', out).group(1))
         return drm_jobID
@@ -47,7 +48,7 @@ class DRM_MXQ(DRM):
                     # print 'missing %s %s' % (task, task.drm_jobID)
                     return True
                 else:
-                    return bjobs[jid]['STAT'] in ['DONE', 'EXIT', 'UNKWN', 'ZOMBI']
+                    return 'running' not in bjobs[jid]['status']
 
             return list(filter(is_done, tasks))
         else:
@@ -62,7 +63,7 @@ class DRM_MXQ(DRM):
             bjobs = bjobs_all()
 
             def f(task):
-                return bjobs.get(str(task.drm_jobID), dict()).get('STAT', '???')
+                return bjobs.get(str(task.drm_jobID), dict()).get('status', '???')
 
             return {task.drm_jobID: f(task) for task in tasks}
         else:
@@ -75,21 +76,24 @@ class DRM_MXQ(DRM):
 
     def kill_tasks(self, tasks):
         for t in tasks:
-            sp.check_call(['bkill', str(t.drm_jobID)], preexec_function=exit_process_group)
+            sp.check_call(['mxqkill', '-J', str(t.drm_jobID)], preexec_function=exit_process_group)
 
 
 def bjobs_all():
     """
-    returns a dict keyed by lsf job ids, who's values are a dict of bjob
+    returns a dict keyed by mxq job ids, who's values are a dict of mxqdump
     information about the job
     """
     try:
-        lines = sp.check_output(['mxqdump', '-a'], preexec_function=exit_process_group).split('\n')
+        lines = sp.check_output(['mxqdump', '-j'], preexec_function=exit_process_group).decode('utf8').split('\n')
     except (sp.CalledProcessError, OSError):
-        return {}
+        lines={}
+
+    header = [x.split('=')[0] for x in lines[0].split(' '))]
     bjobs = {}
-    header = re.split("\s\s+", lines[0])
-    for l in lines[1:]:
-        items = re.split("\s\s+", l)
-        bjobs[items[0]] = dict(list(zip(header, items)))
+
+    for l in lines:
+        if '=' not in l: continue
+        items = [x.split('=')[1] for x in l.split(' ')]
+        bjobs[items[0].split(':')[-1]] = dict(list(zip(header, items)))
     return bjobs
