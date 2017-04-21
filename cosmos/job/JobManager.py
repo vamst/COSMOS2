@@ -6,6 +6,7 @@ from .drm.drm_local import DRM_Local
 from .drm.drm_lsf import DRM_LSF
 from .drm.drm_ge import DRM_GE
 from .drm.drm_drmaa import DRM_DRMAA
+from .drm.drm_mxq import DRM_MXQ
 from .. import TaskStatus, StageStatus, NOOP
 import itertools as it
 from operator import attrgetter
@@ -17,6 +18,7 @@ class JobManager(object):
         self.drms['lsf'] = DRM_LSF(self)
         self.drms['ge'] = DRM_GE(self)
         self.drms['drmaa'] = DRM_DRMAA(self)
+        self.drms['mxq'] = DRM_MXQ(self)
 
         self.local_drm = DRM_Local(self)
         self.running_tasks = []
