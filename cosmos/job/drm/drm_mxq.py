@@ -90,7 +90,8 @@ def bjobs_all():
     except (sp.CalledProcessError, OSError):
         lines=[]
 
-    header = [x.split('=')[0] for x in lines[0].split(' ')]
+    if len(lines)>0 and '=' in lines[0]: header = [x.split('=')[0] for x in lines[0].split(' ')]
+    else: header = []
     bjobs = {}
 
     for l in lines:
