@@ -89,7 +89,8 @@ def bjobs_all():
         groups = [x.split('group_id=')[1].split(' ')[0] for x in os.popen('mxqdump').readlines() if 'group_id=' in x]
         for g in groups:
             for opt in ('-q', '-r', '-f', '-F', '-K', '-C', '-U'):
-                out = sp.check_output(['mxqdump', '-j {opt} -g {g}'.format(**locals())]).decode('utf8').split('\n')
+                # out = sp.check_output(['mxqdump', '-j {opt} -g {g}'.format(**locals())]).decode('utf8').split('\n')
+                out = os.popen('mxqdump -j {opt} -g {g}'.format(**locals())).readlines()
                 lines += out
     except (sp.CalledProcessError, OSError):
         lines=[]
