@@ -46,7 +46,7 @@ def default_get_submit_args(task, parallel_env='orte'):
         try: t_usage = '--runtime={} '.format(task.time_req)
         except: t_usage = '--runtime=1h '
 
-        return '{c_usage} {m_usage} {t_usage} --group-name=cosmos'.format(**locals())
+        return '{c_usage} {m_usage} {t_usage} --group-name=wf_test'.format(**locals())
 
     elif task.drm == 'local':
         return None
@@ -69,7 +69,7 @@ class Cosmos(object):
         :param flask.Flask flask_app: A Flask application instance for the web interface.  The default behavior is to create one.
         :param str default_drm: The Default DRM to use (ex 'local', 'lsf', or 'ge')
         """
-        assert default_drm.split(':')[0] in ['local', 'lsf', 'ge', 'drmaa'], 'unsupported drm: %s' % default_drm.split(':')[0]
+        assert default_drm.split(':')[0] in ['local', 'lsf', 'ge', 'drmaa', 'mxq'], 'unsupported drm: %s' % default_drm.split(':')[0]
         assert '://' in database_url, 'Invalid database_url: %s' % database_url
 
         # self.futures_executor = futures.ThreadPoolExecutor(10)
