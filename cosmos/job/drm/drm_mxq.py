@@ -48,7 +48,7 @@ class DRM_MXQ(DRM):
                     # print 'missing %s %s' % (task, task.drm_jobID)
                     return True
                 else:
-                    print(bjobs[jid]['status'])
+                    # print(bjobs[jid]['status'])
                     return 'running' not in bjobs[jid]['status']
 
             return list(filter(is_done, tasks))

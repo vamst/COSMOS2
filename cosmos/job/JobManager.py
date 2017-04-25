@@ -103,9 +103,8 @@ class JobManager(object):
         # For the rest, ask its DRM if it is done
         f = attrgetter('drm')
         for drm, tasks in it.groupby(sorted(self.running_tasks, key=f), f):
-            # print('Done tasks:.......................')
-            # print(self.get_drm(drm).filter_is_done(list(tasks)))
             for task, job_info_dict in self.get_drm(drm).filter_is_done(list(tasks)):
+                print(task)
                 self.running_tasks.remove(task)
                 for k, v in list(job_info_dict.items()):
                     setattr(task, k, v)
