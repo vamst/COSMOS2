@@ -34,7 +34,7 @@ class DRM_MXQ(DRM):
               preexec_fn=exit_process_group,
               shell=True).decode('utf8')
 
-        drm_jobID = int(re.search('mxq_job_id=(\d+)', out).group(1))
+        drm_jobID = re.search('mxq_job_id=(\d+)', out).group(1)
         return drm_jobID
 
     def filter_is_done(self, tasks):
@@ -76,7 +76,7 @@ class DRM_MXQ(DRM):
 
     def kill_tasks(self, tasks):
         for t in tasks:
-            sp.check_call(['mxqkill', '-J', str(t.drm_jobID)], preexec_function=exit_process_group)
+            sp.check_call(['mxqkill', '-J', str(t.drm_jobID)])
 
 
 def bjobs_all():
@@ -85,9 +85,10 @@ def bjobs_all():
     information about the job
     """
     try:
-        lines = sp.check_output(['mxqdump', '-j'], preexec_function=exit_process_group).decode('utf8').split('\n')
+        groups = [x.split('group_id=')[1].split(' ')[0] for x in os.popen('mxqdump').readlines() if 'group_id=' in x]
+        lines = [sp.check_output(['mxqdump', '-j -q -r -f -F -K -C -U -g {}'.format(g)]).decode('utf8').split('\n') for g in groups]
     except (sp.CalledProcessError, OSError):
-        lines={}
+        lines=[]
 
     header = [x.split('=')[0] for x in lines[0].split(' ')]
     bjobs = {}
