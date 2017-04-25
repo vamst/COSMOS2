@@ -95,12 +95,12 @@ def bjobs_all():
     except (sp.CalledProcessError, OSError):
         lines=[]
 
-    if len(lines)>0 and '=' in lines[0]: header = [x.split('=')[0] for x in lines[0].split(' ')]
+    if len(lines)>0 and '=' in lines[0]: header = [x.split('=')[0] for x in lines[0].split(' ') if '=' in x]
     else: header = []
     bjobs = {}
 
     for l in lines:
         if '=' not in l: continue
-        items = [x.split('=')[1] for x in l.split(' ')]
+        items = [x.split('=')[1] for x in l.split(' ') if '=' in x]
         bjobs[items[0].split(':')[-1]] = dict(list(zip(header, items)))
     return bjobs
