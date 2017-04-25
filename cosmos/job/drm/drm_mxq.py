@@ -32,7 +32,7 @@ class DRM_MXQ(DRM):
             cmd_str=self.jobmanager.get_command_str(task), bsub=bsub),
               env=os.environ,
               preexec_fn=exit_process_group,
-              shell=True)
+              shell=True).decode('utf8')
 
         drm_jobID = int(re.search('mxq_job_id=(\d+)', out).group(1))
         return drm_jobID
