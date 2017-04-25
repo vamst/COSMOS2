@@ -104,7 +104,7 @@ class JobManager(object):
         f = attrgetter('drm')
         for drm, tasks in it.groupby(sorted(self.running_tasks, key=f), f):
             print("TTTTTTTTTTTTTTTTTTTTasks:")
-            print(tasks)
+            print(list(tasks))
             for task, job_info_dict in self.get_drm(drm).filter_is_done(list(tasks)):
                 self.running_tasks.remove(task)
                 for k, v in list(job_info_dict.items()):
