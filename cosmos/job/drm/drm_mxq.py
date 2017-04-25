@@ -28,7 +28,7 @@ class DRM_MXQ(DRM):
             stderr=task.output_stderr_path,
             ns=ns)
 
-        out = sp.check_output('{bsub} "{cmd_str}"'.format(
+        out = sp.check_output('{bsub} {cmd_str}'.format(
             cmd_str=self.jobmanager.get_command_str(task), bsub=bsub),
               env=os.environ,
               preexec_fn=exit_process_group,
