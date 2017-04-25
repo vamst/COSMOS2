@@ -28,8 +28,8 @@ class DRM_MXQ(DRM):
             stderr=task.output_stderr_path,
             ns=ns)
 
-        print('{bsub} {cmd_str}').format(
-            cmd_str=self.jobmanager.get_command_str(task), bsub=bsub)
+        print('{bsub} {cmd_str}'.format(
+            cmd_str=self.jobmanager.get_command_str(task), bsub=bsub))
         exit()
 
         out = sp.check_output('{bsub} {cmd_str}'.format(
