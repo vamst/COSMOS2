@@ -65,6 +65,9 @@ class JobManager(object):
 
         task.status = TaskStatus.submitted
 
+    def get_command_str(self, task):
+        return '\n'.join(os.popen('tail -n +5 {}'.format(task.output_command_script_path)).readlines())
+
     def run_tasks(self, tasks):
         self.running_tasks += tasks
 
@@ -105,6 +108,7 @@ class JobManager(object):
                 for k, v in list(job_info_dict.items()):
                     setattr(task, k, v)
                 yield task
+
 
     @property
     def poll_interval(self):
