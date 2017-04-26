@@ -57,9 +57,9 @@ class DRM_MXQ(DRM):
             res = []
             for task in tasks:
                 if is_done(task):
-                    res.append((t, bjobs[str(task.drm_jobID)]))
+                    res.append((task, bjobs[str(task.drm_jobID)]))
             return res
-            
+
         else:
             return []
 
