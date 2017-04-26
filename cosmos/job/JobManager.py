@@ -66,7 +66,7 @@ class JobManager(object):
         task.status = TaskStatus.submitted
 
     def get_command_str(self, task):
-        return ' '.join([x.strip().replace('  ',' ') for x in os.popen('tail -n +5 {}'.format(task.output_command_script_path)).readlines()])
+        return ' '.join([x.strip().replace('  ',' ') for x in os.popen('tail -n +6 {}'.format(task.output_command_script_path)).readlines()])
 
     def run_tasks(self, tasks):
         self.running_tasks += tasks
