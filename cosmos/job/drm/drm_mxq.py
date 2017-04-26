@@ -120,5 +120,10 @@ def bjobs_all():
         if '=' not in l: continue
         items = [x.split('=')[1] for x in l.split(' ') if '=' in x]
         bjobs[items[0].split(':')[-1]] = dict(list(zip(header, items)))
-        bjobs[items[0].split(':')[-1]]['status'] = bjobs[items[0].split(':')[-1]]['status'].split('(')[0]
+        
+        status = bjobs[items[0].split(':')[-1]]['status'].split('(')[0]
+        bjobs[items[0].split(':')[-1]]['status'] = status
+        if 'finished' in status: bjobs[items[0].split(':')[-1]]['exit_status'] = 0
+        else: bjobs[items[0].split(':')[-1]]['exit_status'] = 1
+        
     return bjobs
