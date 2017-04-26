@@ -19,8 +19,8 @@ from .util import exit_process_group
 
 class DRM_MXQ(DRM):
     name = 'mxq'
-    # poll_interval = 5
-    poll_interval = 50
+    poll_interval = 5
+    # poll_interval = 50
 
     def submit_job(self, task):
         ns = ' ' + task.drm_native_specification if task.drm_native_specification else ''
@@ -31,7 +31,8 @@ class DRM_MXQ(DRM):
 
         out = sp.check_output(
             '{bsub} {cmd_str}'.format(
-                cmd_str=' '.join(self.jobmanager.get_command_str(task).split()),
+                # cmd_str=' '.join(self.jobmanager.get_command_str(task).split()),
+                cmd_str=task.output_command_script_path,
                 bsub=bsub
             ),
           env=os.environ,
