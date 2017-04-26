@@ -154,7 +154,7 @@ class Workflow(Base):
         # params
         if params is None:
             params = dict()
-        for k, v in list(params.items()):
+        for k, v in params.items():
             # decompose `Dependency` objects to values and parents
             new_val, parent_tasks = recursive_resolve_dependency(v)
 
@@ -208,7 +208,7 @@ class Workflow(Base):
             input_map = dict()
             output_map = dict()
 
-            for keyword, param in list(sig.parameters.items()):
+            for keyword, param in sig.parameters.items():
                 if keyword.startswith('in_'):
                     v = params.get(keyword, param.default)
                     assert v != funcsigs._empty, 'parameter %s for %s is required' % (param, func)
@@ -419,10 +419,10 @@ class Workflow(Base):
         if delete_files:
             raise NotImplementedError('This should delete all Task.output_files')
 
-        print('%s Deleting from SQL...' % self, file=sys.stderr)
+        # print('%s Deleting from SQL...' % self, file=sys.stderr)
         self.session.delete(self)
         self.session.commit()
-        print('%s Deleted' % self, file=sys.stderr)
+        # print('%s Deleted' % self, file=sys.stderr)
 
 
 # @event.listens_for(Workflow, 'before_delete')
