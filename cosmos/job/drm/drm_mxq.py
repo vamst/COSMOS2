@@ -38,8 +38,8 @@ class DRM_MXQ(DRM):
         return drm_jobID
 
     def filter_is_done(self, tasks):
-        return []
-        
+        return tasks
+
         if len(tasks):
             bjobs = bjobs_all()
 
