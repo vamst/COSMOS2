@@ -54,6 +54,11 @@ class DRM_MXQ(DRM):
                     return 'running' not in bjobs[jid]['status']
             # return list(filter(is_done, tasks))
 
+            print('BJOBS:----->')
+            for b in bjobs:
+                print(b, bjobs[b])
+            print("<----- END BJOBS listing")
+
             res = []
             for task in tasks:
                 if is_done(task):
@@ -95,7 +100,8 @@ def bjobs_all():
     returns a dict keyed by mxq job ids, who's values are a dict of mxqdump
     information about the job
     """
-    try:
+    # try:
+    if True:
         lines = []
         groups = [x.split('group_id=')[1].split(' ')[0] for x in os.popen('mxqdump').readlines() if 'group_id=' in x]
         for g in groups:
@@ -103,8 +109,8 @@ def bjobs_all():
                 # out = sp.check_output(['mxqdump', '-j {opt} -g {g}'.format(**locals())]).decode('utf8').split('\n')
                 out = os.popen('mxqdump -j {opt} -g {g}'.format(**locals())).readlines()
                 lines += out
-    except (sp.CalledProcessError, OSError):
-        lines=[]
+    # except (sp.CalledProcessError, OSError):
+    #     lines=[]
 
     if len(lines)>0 and '=' in lines[0]: header = [x.split('=')[0] for x in lines[0].split(' ') if '=' in x]
     else: header = []
