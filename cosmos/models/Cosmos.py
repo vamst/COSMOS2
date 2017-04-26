@@ -37,21 +37,12 @@ def default_get_submit_args(task, parallel_env='orte'):
             priority=priority, queue=queue, jobname=jobname, core_req=task.core_req, parallel_env=parallel_env)
     
     elif task.drm == 'mxq':
-        # try: c_usage = '--threads={} '.format(task.core_req)
-        # except: c_usage = '--threads=2 '
-        
-        # try: m_usage = '--memory={} '.format(task.mem_req)
-        # except: m_usage = '--memory=10G '
-
-        # try: t_usage = '--runtime={} '.format(task.time_req)
-        # except: t_usage = '--runtime=1h '
-
         if(task.core_req): c_usage =  '--threads={} '.format(task.core_req)
         else: c_usage = '--threads=1'
         if(task.mem_req): m_usage =  '--memory={}M '.format(task.mem_req)
         else: m_usage = '--memory=1G'
         if(task.time_req): t_usage =  '--runtime={} '.format(task.time_req)
-        else: t_usage = '--runtime=1h'
+        else: t_usage = '--runtime=10m'
 
         return '{c_usage} {m_usage} {t_usage} --group-name=wf_test'.format(**locals())
 

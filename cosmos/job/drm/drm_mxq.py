@@ -19,7 +19,8 @@ from .util import exit_process_group
 
 class DRM_MXQ(DRM):
     name = 'mxq'
-    poll_interval = 5
+    # poll_interval = 5
+    poll_interval = 50
 
     def submit_job(self, task):
         ns = ' ' + task.drm_native_specification if task.drm_native_specification else ''
@@ -28,11 +29,14 @@ class DRM_MXQ(DRM):
             stderr=task.output_stderr_path,
             ns=ns)
 
-        out = sp.check_output('{bsub} {cmd_str}'.format(
-            cmd_str=self.jobmanager.get_command_str(task), bsub=bsub),
-              env=os.environ,
-              preexec_fn=exit_process_group,
-              shell=True).decode('utf8')
+        out = sp.check_output(
+            '{bsub} {cmd_str}'.format(
+                cmd_str=' '.self.jobmanager.get_command_str(task).split(),
+                bsub=bsub
+            ),
+          env=os.environ,
+          preexec_fn=exit_process_group,
+          shell=True).decode('utf8')
 
         drm_jobID = re.search('mxq_job_id=(\d+)', out).group(1)
         return drm_jobID
@@ -107,6 +111,7 @@ def bjobs_all():
         for g in groups:
             for opt in ('-q', '-r', '-f', '-F', '-K', '-C', '-U'):
                 # out = sp.check_output(['mxqdump', '-j {opt} -g {g}'.format(**locals())]).decode('utf8').split('\n')
+                # out = os.popen('mxqdump -j {opt} -g {g} 2> /dev/null'.format(**locals())).readlines()
                 out = os.popen('mxqdump -j {opt} -g {g}'.format(**locals())).readlines()
                 lines += out
     # except (sp.CalledProcessError, OSError):
@@ -125,5 +130,5 @@ def bjobs_all():
         bjobs[items[0].split(':')[-1]]['status'] = status
         if 'finished' in status: bjobs[items[0].split(':')[-1]]['exit_status'] = 0
         else: bjobs[items[0].split(':')[-1]]['exit_status'] = 1
-        
+
     return bjobs
