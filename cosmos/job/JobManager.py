@@ -110,6 +110,8 @@ class JobManager(object):
         #         yield task
 
         drm = 'mxq'
+        print('AAAAAAAAAAAAAAAAAA')
+        print(self.get_drm('mxq').filter_is_done(self.running_tasks))
         for task, job_info_dict in self.get_drm('mxq').filter_is_done(self.running_tasks):
             self.running_tasks.remove(task)
             for k, v in list(job_info_dict.items()):
