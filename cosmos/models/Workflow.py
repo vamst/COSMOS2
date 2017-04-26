@@ -229,7 +229,8 @@ class Workflow(Base):
                         must_succeed=must_succeed,
                         core_req=params_or_signature_default_or('core_req', 1),
                         mem_req=params_or_signature_default_or('mem_req', None),
-                        time_req=time_req)
+                        time_req=time_req,
+                        NOOP=False,)
 
             task.cmd_fxn = func
 
@@ -301,6 +302,7 @@ class Workflow(Base):
                 s.status = StageStatus.no_attempt
 
         # Make sure everything is in the sqlalchemy session
+        # self.NOOP = 0
         session.add(self)
         successful = [t for t in task_graph.nodes() if t.successful]
 
@@ -320,6 +322,7 @@ class Workflow(Base):
             # make sure we've got enough cores
             for t in task_queue:
                 assert int(t.core_req) <= self.max_cores, '%s requires more cpus (%s) than `max_cores` (%s)' % (t, t.core_req, self.max_cores)
+
 
         # Run this thing!
         self.log.info('Committing to SQL db...')
