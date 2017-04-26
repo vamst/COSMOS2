@@ -230,7 +230,9 @@ class Workflow(Base):
                         core_req=params_or_signature_default_or('core_req', 1),
                         mem_req=params_or_signature_default_or('mem_req', None),
                         time_req=time_req,
-                        NOOP=False,)
+                        NOOP=False,
+                        successful=False,
+                        )
 
             task.cmd_fxn = func
 
