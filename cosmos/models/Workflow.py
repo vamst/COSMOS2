@@ -545,4 +545,4 @@ def _copy_graph(graph):
     graph2 = nx.DiGraph()
     graph2.add_edges_from(graph.edges())
     graph2.add_nodes_from(graph.nodes())
-return graph2
+    return graph2
