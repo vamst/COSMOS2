@@ -54,10 +54,10 @@ class DRM_MXQ(DRM):
                     return 'running' not in bjobs[jid]['status']
             # return list(filter(is_done, tasks))
 
-            print('BJOBS:----->')
-            for b in bjobs:
-                print(b, bjobs[b])
-            print("<----- END BJOBS listing")
+            # print('BJOBS:----->')
+            # for b in bjobs:
+            #     print(b, bjobs[b])
+            # print("<----- END BJOBS listing")
 
             res = []
             for task in tasks:
