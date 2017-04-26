@@ -31,7 +31,7 @@ class DRM_MXQ(DRM):
 
         out = sp.check_output(
             '{bsub} {cmd_str}'.format(
-                cmd_str=' '.self.jobmanager.get_command_str(task).split(),
+                cmd_str=' '.join(self.jobmanager.get_command_str(task).split()),
                 bsub=bsub
             ),
           env=os.environ,
