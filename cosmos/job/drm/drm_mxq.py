@@ -118,6 +118,7 @@ def bjobs_all():
 
     for l in lines:
         if '=' not in l: continue
-        items = [x.split('=')[1].split('(')[0] for x in l.split(' ') if '=' in x]
+        items = [x.split('=')[1] for x in l.split(' ') if '=' in x]
         bjobs[items[0].split(':')[-1]] = dict(list(zip(header, items)))
+        bjobs[items[0].split(':')[-1]]['status'] = bjobs[items[0].split(':')[-1]]['status'].split('(')[0]
     return bjobs
