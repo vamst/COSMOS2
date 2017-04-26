@@ -103,7 +103,6 @@ class JobManager(object):
         # For the rest, ask its DRM if it is done
         f = attrgetter('drm')
         for drm, tasks in it.groupby(sorted(self.running_tasks, key=f), f):
-            if len(tasks) == 1: tasks = (tasks,)
             for task, job_info_dict in self.get_drm(drm).filter_is_done(list(tasks)):
                 # print(task)
                 self.running_tasks.remove(task)
