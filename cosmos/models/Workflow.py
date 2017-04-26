@@ -74,8 +74,8 @@ class Workflow(Base):
 
     exclude_from_dict = ['info']
     dont_garbage_collect = None
-    # terminate_when_safe = False
-    terminate_when_safe = True
+    terminate_when_safe = False
+    # terminate_when_safe = True
 
     @declared_attr
     def status(cls):
@@ -478,10 +478,11 @@ def _run(workflow, session, task_queue):
         # conveniently, this returns early if we catch a signal
         time.sleep(workflow.jobmanager.poll_interval)
 
-        if workflow.terminate_when_safe:
-            workflow.log.info('%s Early termination requested: stopping workflow', workflow)
-            workflow.terminate(due_to_failure=False)
-            return
+        return 
+        # if workflow.terminate_when_safe:
+        #     workflow.log.info('%s Early termination requested: stopping workflow', workflow)
+        #     workflow.terminate(due_to_failure=False)
+        #     return
 
 
 def _run_queued_and_ready_tasks(task_queue, workflow):
