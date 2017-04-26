@@ -52,8 +52,13 @@ class DRM_MXQ(DRM):
                 else:
                     # print(bjobs[jid]['status'])
                     return 'running' not in bjobs[jid]['status']
-
             return list(filter(is_done, tasks))
+
+            res = []
+            for task in tasks:
+                if is_done(task):
+                    res.append((t, bjobs[str(task.drm_jobID)]))
+            return res
         else:
             return []
 
