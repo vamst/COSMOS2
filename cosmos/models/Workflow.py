@@ -576,8 +576,8 @@ def _run(workflow, session, task_queue):
             available_cores = False
 
         # print(_process_finished_tasks(workflow.jobmanager))
-        print(workflow.jobmanager.get_finished_tasks())
-        
+        print(list(workflow.jobmanager.get_finished_tasks()))
+
         for task in _process_finished_tasks(workflow.jobmanager):
             print("Current task: {}".format(task))
             if task.status == TaskStatus.failed and task.must_succeed:
