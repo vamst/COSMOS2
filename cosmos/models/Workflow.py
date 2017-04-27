@@ -605,7 +605,7 @@ def _run(workflow, session, task_queue):
         time.sleep(workflow.jobmanager.poll_interval)
 
         if watcher.caught_signal():
-            workflow.log.info('Interrupting workflow to handle signal %d', watcher.last_signal)
+            # workflow.log.info('Interrupting workflow to handle signal %d', watcher.last_signal)
             # workflow.terminate(due_to_failure=False)
             return
 
