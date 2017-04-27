@@ -575,6 +575,7 @@ def _run(workflow, session, task_queue):
             _run_queued_and_ready_tasks(task_queue, workflow)
             available_cores = False
 
+        print(_process_finished_tasks(workflow.jobmanager))
         for task in _process_finished_tasks(workflow.jobmanager):
             print("Current task: {}".format(task))
             if task.status == TaskStatus.failed and task.must_succeed:
@@ -608,7 +609,7 @@ def _run(workflow, session, task_queue):
         session.commit()
 
         # time.sleep(workflow.jobmanager.poll_interval)
-        time.sleep(5)
+        time.sleep(2)
 
         if watcher.caught_signal():
             workflow.log.info('Interrupting workflow to handle signal %d', watcher.last_signal)
