@@ -31,7 +31,6 @@ class DRM_MXQ(DRM):
 
         out = sp.check_output(
             '{bsub} {cmd_str}'.format(
-                # cmd_str=' '.join(self.jobmanager.get_command_str(task).split()),
                 cmd_str=task.output_command_script_path,
                 bsub=bsub
             ),
@@ -79,8 +78,8 @@ class DRM_MXQ(DRM):
             bjobs = bjobs_all()
 
             def f(task):
-                # return bjobs.get(str(task.drm_jobID), dict()).get('status', '???')
-                return bjobs.get(str(task.drm_jobID), dict()).get('status', 'FINISHED')
+                return bjobs.get(str(task.drm_jobID), dict()).get('status', '???')
+                # return bjobs.get(str(task.drm_jobID), dict()).get('status', 'FINISHED')
 
             return {task.drm_jobID: f(task) for task in tasks}
         else:
@@ -125,6 +124,7 @@ def bjobs_all():
         
         status = bjobs[items[0].split(':')[-1]]['status'].split('(')[0]
         bjobs[items[0].split(':')[-1]]['status'] = status
+
         if 'finished' in status: bjobs[items[0].split(':')[-1]]['exit_status'] = 0
         else: bjobs[items[0].split(':')[-1]]['exit_status'] = 1
 
