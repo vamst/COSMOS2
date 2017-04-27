@@ -606,8 +606,8 @@ def _run(workflow, session, task_queue):
         # only commit Task changes after processing a batch of finished ones
         session.commit()
 
-        time.sleep(workflow.jobmanager.poll_interval)
-        # time.sleep(1)
+        # time.sleep(workflow.jobmanager.poll_interval)
+        time.sleep(5)
 
         if watcher.caught_signal():
             workflow.log.info('Interrupting workflow to handle signal %d', watcher.last_signal)
