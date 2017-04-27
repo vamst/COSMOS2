@@ -75,7 +75,6 @@ class Workflow(Base):
     exclude_from_dict = ['info']
     dont_garbage_collect = None
     terminate_when_safe = False
-    # terminate_when_safe = True
 
     @declared_attr
     def status(cls):

@@ -79,7 +79,8 @@ class DRM_MXQ(DRM):
             bjobs = bjobs_all()
 
             def f(task):
-                return bjobs.get(str(task.drm_jobID), dict()).get('status', '???')
+                # return bjobs.get(str(task.drm_jobID), dict()).get('status', '???')
+                return bjobs.get(str(task.drm_jobID), dict()).get('status', 'FINISHED')
 
             return {task.drm_jobID: f(task) for task in tasks}
         else:
