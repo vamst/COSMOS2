@@ -51,7 +51,7 @@ task_failed_printout = """Failure Info:
 
 @signal_task_status_change.connect
 def task_status_changed(task):
-    if task.status in [TaskStatus.successful]:
+    if task.status == TaskStatus.successful:
         if not task.NOOP:
             task.log.info('%s %s' % (task, task.status))
 
