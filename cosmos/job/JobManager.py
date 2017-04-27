@@ -109,9 +109,9 @@ class JobManager(object):
         drm = 'mxq'
         for task, job_info_dict in self.get_drm('mxq').filter_is_done(self.running_tasks):
             if job_info_dict['status'] == 'inq': continue
-            print('[DEBUG]')
-            print(task)
-            print(job_info_dict)
+            # print('[DEBUG]')
+            # print(task)
+            # print(job_info_dict)
             self.running_tasks.remove(task)
             for k, v in list(job_info_dict.items()):
                 setattr(task, k, v)
