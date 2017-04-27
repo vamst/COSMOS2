@@ -419,12 +419,12 @@ class Workflow(Base):
 
         # Create Task Queue
         task_queue = _copy_graph(task_graph)
-        print("New task_queue")
-        print(list(task_queue))
+        # print("New task_queue")
+        # print(list(task_queue))
         self.log.info('Skipping %s successful tasks...' % len(successful))
         task_queue.remove_nodes_from(successful)
-        print("After remove successful")
-        print(list(task_queue))
+        # print("After remove successful")
+        # print(list(task_queue))
 
         handle_exits(self)
 
@@ -581,14 +581,14 @@ def _run(workflow, session, task_queue):
     # print(task_queue)
     # print((len(task_queue)))
     while len(task_queue) > 1:
-        print("Tasks to do: {}".format(len(task_queue)))
-        print(list(task_queue))
+        # print("Tasks to do: {}".format(len(task_queue)))
+        # print(list(task_queue))
         if available_cores:
             _run_queued_and_ready_tasks(task_queue, workflow)
             available_cores = False
 
         for task in _process_finished_tasks(workflow.jobmanager):
-            print("Current task: {}".format(task))
+            # print("Current task: {}".format(task))
             if task.status == TaskStatus.failed and task.must_succeed:
 
                 if workflow.info['fail_fast']:
@@ -617,14 +617,14 @@ def _run(workflow, session, task_queue):
         session.commit()
 
         # time.sleep(workflow.jobmanager.poll_interval)
-        time.sleep(2)
+        time.sleep(5)
 
         if watcher.caught_signal():
             workflow.log.info('Interrupting workflow to handle signal %d', watcher.last_signal)
             workflow.terminate(due_to_failure=False)
             return
 
-    print('aaaaaaaaaaaaaaaaaaaaaa')
+    # print('aaaaaaaaaaaaaaaaaaaaaa')
     return
 
 import networkx as nx

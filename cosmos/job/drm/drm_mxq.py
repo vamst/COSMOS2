@@ -120,7 +120,7 @@ def bjobs_all():
             for opt in ('-q', '-r', '-f', '-F', '-K', '-C', '-U'):
                 # out = sp.check_output(['mxqdump', '-j {opt} -g {g}'.format(**locals())]).decode('utf8').split('\n')
                 # out = os.popen('mxqdump -j {opt} -g {g} 2> /dev/null'.format(**locals())).readlines()
-                out = os.popen('mxqdump -j {opt} -g {g}'.format(**locals())).readlines()
+                out = os.popen('mxqdump -j {opt} -g {g} 2> /dev/null'.format(**locals())).readlines()
                 lines += out
     # except (sp.CalledProcessError, OSError):
     #     lines=[]
