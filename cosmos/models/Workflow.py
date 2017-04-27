@@ -592,7 +592,10 @@ def _run(workflow, session, task_queue):
                 workflow.log.info('%s tasks left in the queue' % len(task_queue))
             elif task.status == TaskStatus.successful:
                 # just pop this task
+                print("Going to remove task: {}".format(task))
+                print("Before removing asks to do: {}".format(len(task_queue)))
                 task_queue.remove_node(task)
+                print("After removing asks to do: {}".format(len(task_queue)))
             elif task.status == TaskStatus.no_attempt:
                 # the task must have failed, and is being reattempted
                 pass
@@ -603,8 +606,8 @@ def _run(workflow, session, task_queue):
         # only commit Task changes after processing a batch of finished ones
         session.commit()
 
-        # time.sleep(workflow.jobmanager.poll_interval)
-        time.sleep(1)
+        time.sleep(workflow.jobmanager.poll_interval)
+        # time.sleep(1)
 
         if watcher.caught_signal():
             workflow.log.info('Interrupting workflow to handle signal %d', watcher.last_signal)
