@@ -580,7 +580,7 @@ def _run(workflow, session, task_queue):
     # print("Reseived task_queue")
     # print(task_queue)
     # print((len(task_queue)))
-    while len(task_queue) > 1:
+    while len(task_queue) > 0:
         # print("Tasks to do: {}".format(len(task_queue)))
         # print(list(task_queue))
         if available_cores:
