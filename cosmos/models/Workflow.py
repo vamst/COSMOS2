@@ -417,8 +417,12 @@ class Workflow(Base):
 
         # Create Task Queue
         task_queue = _copy_graph(task_graph)
+        print("New task_queue")
+        print(list(task_queue))
         self.log.info('Skipping %s successful tasks...' % len(successful))
         task_queue.remove_nodes_from(successful)
+        print("After remove successful")
+        print(list(task_queue))
 
         handle_exits(self)
 
@@ -557,6 +561,8 @@ def _run(workflow, session, task_queue):
 
     watcher = SignalWatcher(workflow)
 
+
+
     # graph_failed = nx.DiGraph()
     #
     # def handler(signal, frame):
@@ -569,6 +575,9 @@ def _run(workflow, session, task_queue):
     # signal.signal(signal.SIGUSR1, handler)
 
     available_cores = True
+    # print("Reseived task_queue")
+    # print(task_queue)
+    # print((len(task_queue)))
     while len(task_queue) > 1:
         print("Tasks to do: {}".format(len(task_queue)))
         print(list(task_queue))

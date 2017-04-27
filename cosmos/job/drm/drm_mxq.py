@@ -93,7 +93,19 @@ class DRM_MXQ(DRM):
     def kill_tasks(self, tasks):
         for t in tasks:
             sp.check_call(['mxqkill', '-J', str(t.drm_jobID)])
+            g = get_gid_from_jid(t.drm_jobID)
+            if g:
+                sp.check_call(['mxqkill', '-g', str(g)])
 
+
+def get_gid_from_jid(jid):
+    groups = [x.split('group_id=')[1].split(' ')[0] for x in os.popen('mxqdump').readlines() if 'group_id=' in x]
+    for g in groups:
+        for opt in ('-q', '-r', '-f', '-F', '-K', '-C', '-U'):
+            for l in os.popen('mxqdump -j {opt} -g {g} 2> /dev/null'.format(**locals())).readlines():
+                if jid in l:
+                    return g
+    return False
 
 def bjobs_all():
     """
