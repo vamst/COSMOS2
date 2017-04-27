@@ -570,17 +570,13 @@ def _run(workflow, session, task_queue):
 
     available_cores = True
     while len(task_queue) > 1:
-        print("Tasks to do: {}".format(len(task_queue)))
+        # print("Tasks to do: {}".format(len(task_queue)))
         if available_cores:
             _run_queued_and_ready_tasks(task_queue, workflow)
             available_cores = False
 
-        # print(_process_finished_tasks(workflow.jobmanager))
-        # print(list(workflow.jobmanager.get_finished_tasks()))
-        # print(task_queue)
-
         for task in _process_finished_tasks(workflow.jobmanager):
-            print("Current task: {}".format(task))
+            # print("Current task: {}".format(task))
             if task.status == TaskStatus.failed and task.must_succeed:
 
                 if workflow.info['fail_fast']:
@@ -597,10 +593,7 @@ def _run(workflow, session, task_queue):
                 workflow.log.info('%s tasks left in the queue' % len(task_queue))
             elif task.status == TaskStatus.successful:
                 # just pop this task
-                print("Going to remove task: {}".format(task))
-                print("Before removing asks to do: {}".format(len(task_queue)))
                 task_queue.remove_node(task)
-                print("After removing asks to do: {}".format(len(task_queue)))
             elif task.status == TaskStatus.no_attempt:
                 # the task must have failed, and is being reattempted
                 pass
@@ -619,7 +612,7 @@ def _run(workflow, session, task_queue):
             workflow.terminate(due_to_failure=False)
             return
 
-    print('aaaaaaaaaaaaaaaaaaaaaa')
+    # print('aaaaaaaaaaaaaaaaaaaaaa')
     return
 
 import networkx as nx
