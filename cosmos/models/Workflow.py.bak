@@ -154,7 +154,7 @@ class Workflow(Base):
         # params
         if params is None:
             params = dict()
-        for k, v in list(params.items()):
+        for k, v in params.items():
             # decompose `Dependency` objects to values and parents
             new_val, parent_tasks = recursive_resolve_dependency(v)
 
@@ -208,7 +208,7 @@ class Workflow(Base):
             input_map = dict()
             output_map = dict()
 
-            for keyword, param in list(sig.parameters.items()):
+            for keyword, param in sig.parameters.items():
                 if keyword.startswith('in_'):
                     v = params.get(keyword, param.default)
                     assert v != funcsigs._empty, 'parameter %s for %s is required' % (param, func)
@@ -229,10 +229,7 @@ class Workflow(Base):
                         must_succeed=must_succeed,
                         core_req=params_or_signature_default_or('core_req', 1),
                         mem_req=params_or_signature_default_or('mem_req', None),
-                        time_req=time_req,
-                        NOOP=False,
-                        successful=False,
-                        )
+                        time_req=time_req)
 
             task.cmd_fxn = func
 
@@ -304,7 +301,6 @@ class Workflow(Base):
                 s.status = StageStatus.no_attempt
 
         # Make sure everything is in the sqlalchemy session
-        # self.NOOP = 0
         session.add(self)
         successful = [t for t in task_graph.nodes() if t.successful]
 
@@ -324,7 +320,6 @@ class Workflow(Base):
             # make sure we've got enough cores
             for t in task_queue:
                 assert int(t.core_req) <= self.max_cores, '%s requires more cpus (%s) than `max_cores` (%s)' % (t, t.core_req, self.max_cores)
-
 
         # Run this thing!
         self.log.info('Committing to SQL db...')
@@ -424,10 +419,10 @@ class Workflow(Base):
         if delete_files:
             raise NotImplementedError('This should delete all Task.output_files')
 
-        print('%s Deleting from SQL...' % self, file=sys.stderr)
+        # print('%s Deleting from SQL...' % self, file=sys.stderr)
         self.session.delete(self)
         self.session.commit()
-        print('%s Deleted' % self, file=sys.stderr)
+        # print('%s Deleted' % self, file=sys.stderr)
 
 
 # @event.listens_for(Workflow, 'before_delete')
@@ -473,23 +468,19 @@ def _run(workflow, session, task_queue):
 
         # only commit Task changes after processing a batch of finished ones
         session.commit()
-        
-        workflow.log.info('Finishing workflow')
-        # _process_finished_tasks(workflow.jobmanager)
-        # workflow.terminate(due_to_failure=False)
-        return
 
-        watcher.wait(workflow.jobmanager.poll_interval)
-        if watcher.caught_signal():
-            workflow.log.info('Interrupting workflow to handle signal %d', watcher.last_signal)
+        # conveniently, this returns early if we catch a signal
+        time.sleep(workflow.jobmanager.poll_interval)
+
+        if workflow.terminate_when_safe:
+            workflow.log.info('%s Early termination requested: stopping workflow', workflow)
             workflow.terminate(due_to_failure=False)
             return
 
 
 def _run_queued_and_ready_tasks(task_queue, workflow):
     max_cores = workflow.max_cores
-    # ready_tasks = [task for task, degree in list(task_queue.in_degree().items()) if
-    ready_tasks = [task for task, degree in list(task_queue.in_degree()) if
+    ready_tasks = [task for task, degree in list(task_queue.in_degree().items()) if
                    degree == 0 and task.status == TaskStatus.no_attempt]
 
     if max_cores is None:
@@ -554,4 +545,4 @@ def _copy_graph(graph):
     graph2 = nx.DiGraph()
     graph2.add_edges_from(graph.edges())
     graph2.add_nodes_from(graph.nodes())
-    return graph2
+return graph2

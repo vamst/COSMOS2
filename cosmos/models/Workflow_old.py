@@ -1,19 +1,14 @@
-"""
-Tools for defining, running and terminating Cosmos workflows.
-"""
-
+from sqlalchemy import orm
 import atexit
+import sys
 import datetime
 import os
 import re
-import sys
-import time
+import signal
 import types
-
 import funcsigs
+import threading
 
-from sqlalchemy import orm
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.schema import Column
 from sqlalchemy.types import Boolean, Integer, String, DateTime, VARCHAR
@@ -28,10 +23,10 @@ from ..util.sqla import Enum34_ColumnType, MutableDict, JSONEncodedDict
 from ..db import Base
 from ..core.cmd_fxn import signature
 
+opj = os.path.join
+
 from .. import TaskStatus, StageStatus, WorkflowStatus, signal_workflow_status_change
 from .Task import Task
-
-opj = os.path.join
 
 
 def default_task_log_output_dir(task, subdir=''):
@@ -50,6 +45,86 @@ def _workflow_status_changed(ex):
         ex.successful = True
         ex.finished_on = datetime.datetime.now()
 
+    ex.session.commit()
+
+
+class SignalWatcher(object):
+    """
+    Monitors the specified signals and sets an Event when one is caught.
+    Depending on its configuration, SGE can send a SIGUSR1, SIGUSR2, and/or
+    SIGXCPU before sending SIGSTOP/SIGKILL signals which cannot be caught.
+    According to ``man qsub`` (search for -notify), SGE can:
+    > send "warning" signals to a running job prior to sending the
+    > signals themselves. If a SIGSTOP is pending, the job will
+    > receive a SIGUSR1 several seconds before the SIGSTOP. If a
+    > SIGKILL is pending, the job will receive a SIGUSR2 several
+    > seconds before the SIGKILL.
+    acording to ``man queue_conf``, SGE additionally can:
+    > If s_cpu is exceeded, the job is sent a SIGXCPU signal which
+    > can be caught by the job.... If s_vmem is exceeded, the job
+    > is sent a SIGXCPU signal which can be caught by the job....
+    > If s_rss is exceeded, the job is sent a SIGXCPU signal which
+      can be caught by the job
+    """
+
+    def __init__(self,
+                 workflow,
+                 target_signals=(signal.SIGINT, signal.SIGTERM, signal.SIGUSR2, signal.SIGXCPU),
+                 ignored_signals=(signal.SIGUSR1,),
+                 explanations={
+                     signal.SIGUSR1: 'SGE is about to send a SIGSTOP',
+                     signal.SIGUSR2: 'SGE is about to send a SIGKILL',
+                     signal.SIGXCPU: 'SGE resource limit has been exceeded'}):
+
+        self.workflow = workflow
+        self.explanations = explanations
+
+        self.signal_event = threading.Event()
+        self.last_signal = None
+
+        for sig in target_signals:
+            self._check_existing_handler(sig)
+            signal.signal(sig, self.flag_signal_receipt)
+
+        for sig in ignored_signals:
+            self._check_existing_handler(sig)
+            signal.signal(sig, self.log_signal)
+
+    @staticmethod
+    def _check_existing_handler(sig):
+        prev_handler = signal.getsignal(sig)
+        if prev_handler not in (signal.SIG_DFL, signal.SIG_IGN, signal.default_int_handler):
+            raise RuntimeError("a custom signal handler has already been set for signal %d: %s" % (sig, prev_handler))
+
+    def explain(self, signum):
+        names = []
+        for k, v in signal.__dict__.items():
+            if k.startswith('SIG') and v == signum:
+                names.append(k)
+        names.sort()
+
+        if signum in self.explanations:
+            return ': '.join((' or '.join(names), self.explanations[signum]))
+        else:
+            return ' or '.join(names)
+
+    def log_signal(self, signum, frame):    # pylint: disable=unused-argument
+        msg = "Caught signal %d (%s)" % (signum, self.explain(signum))
+        print(msg, file=sys.stderr)
+        sys.stderr.flush()
+        self.workflow.log.info(msg)
+
+    def flag_signal_receipt(self, signum, frame):
+        self.log_signal(signum, frame)
+        self.last_signal = signum
+        self.signal_event.set()
+
+    def wait(self, timeout=None):
+        self.signal_event.wait(timeout)
+
+    def caught_signal(self):
+        return self.signal_event.is_set()
+
 
 class Workflow(Base):
     """
@@ -59,7 +134,9 @@ class Workflow(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(VARCHAR(200), unique=True)
+    # description = Column(String(255))
     successful = Column(Boolean, nullable=False, default=False)
+    # output_dir = Column(String(255), nullable=False)
     created_on = Column(DateTime)
     started_on = Column(DateTime)
     finished_on = Column(DateTime)
@@ -68,13 +145,14 @@ class Workflow(Base):
 
     max_attempts = Column(Integer, default=1)
     info = Column(MutableDict.as_mutable(JSONEncodedDict))
+    # recipe_graph = Column(PickleType)
     _status = Column(Enum34_ColumnType(WorkflowStatus), default=WorkflowStatus.no_attempt)
+    #_status = Column(String(255), default=WorkflowStatus.no_attempt)
     stages = relationship("Stage", cascade="all, merge, delete-orphan", order_by="Stage.number", passive_deletes=True,
                           backref='workflow')
 
     exclude_from_dict = ['info']
     dont_garbage_collect = None
-    terminate_when_safe = False
 
     @declared_attr
     def status(cls):
@@ -154,7 +232,7 @@ class Workflow(Base):
         # params
         if params is None:
             params = dict()
-        for k, v in list(params.items()):
+        for k, v in params.items():
             # decompose `Dependency` objects to values and parents
             new_val, parent_tasks = recursive_resolve_dependency(v)
 
@@ -208,7 +286,7 @@ class Workflow(Base):
             input_map = dict()
             output_map = dict()
 
-            for keyword, param in list(sig.parameters.items()):
+            for keyword, param in sig.parameters.items():
                 if keyword.startswith('in_'):
                     v = params.get(keyword, param.default)
                     assert v != funcsigs._empty, 'parameter %s for %s is required' % (param, func)
@@ -229,10 +307,7 @@ class Workflow(Base):
                         must_succeed=must_succeed,
                         core_req=params_or_signature_default_or('core_req', 1),
                         mem_req=params_or_signature_default_or('mem_req', None),
-                        time_req=time_req,
-                        NOOP=False,
-                        successful=False,
-                        )
+                        time_req=time_req)
 
             task.cmd_fxn = func
 
@@ -284,10 +359,36 @@ class Workflow(Base):
         self.successful = False
 
         if self.started_on is None:
+            import datetime
+
             self.started_on = datetime.datetime.now()
 
         task_graph = self.task_graph()
         stage_graph = self.stage_graph()
+
+        # def assert_no_duplicate_taskfiles():
+        # taskfiles = (tf for task in task_g.nodes() for tf in task.output_files if not tf.duplicate_ok)
+        #     f = lambda tf: tf.path
+        #     for path, group in it.groupby(sorted(filter(lambda tf: not tf.task_output_for.NOOP, taskfiles), key=f), f):
+        #         group = list(group)
+        #         if len(group) > 1:
+        #             t1 = group[0].task_output_for
+        #             tf1 = group[0]
+        #             t2 = group[1].task_output_for
+        #             tf2 = group[1]
+        #             div = "-" * 72 + "\n"
+        #             self.log.error("Duplicate taskfiles paths detected:\n "
+        #                            "{div}"
+        #                            "{t1}\n"
+        #                            "* {tf1}\n"
+        #                            "{div}"
+        #                            "{t2}\n"
+        #                            "* {tf2}\n"
+        #                            "{div}".format(**locals()))
+        #
+        #             raise ValueError('Duplicate taskfile paths')
+        #
+        # assert_no_duplicate_taskfiles()
 
         assert len(set(self.stages)) == len(self.stages), 'duplicate stage name detected: %s' % (
             next(duplicates(self.stages)))
@@ -300,12 +401,13 @@ class Workflow(Base):
             stage_graph_no_cycles.remove_edge(cycle[-1], cycle[0])
         for i, s in enumerate(topological_sort(stage_graph_no_cycles)):
             s.number = i + 1
-            if s.status != StageStatus.successful:
-                s.status = StageStatus.no_attempt
 
-        # Make sure everything is in the sqlalchemy session
-        # self.NOOP = 0
+
+        # Add final taskgraph to session
+        # session.expunge_all()
         session.add(self)
+        # session.add_all(stage_g.nodes())
+        # session.add_all(task_g.nodes())
         successful = [t for t in task_graph.nodes() if t.successful]
 
         # print stages
@@ -319,12 +421,24 @@ class Workflow(Base):
 
         handle_exits(self)
 
+        # self.log.info('Checking stage status...')
+
+        # def check_stage_status():
+        #     """Update stage attributes if new tasks were added to them"""
+        #     from .. import StageStatus
+        #     for stage in self.stages:
+        #         if stage.status != StageStatus.no_attempt and any(not task.successful for task in stage.tasks):
+        #             stage.successful = False
+        #             stage.finished_on = None
+        #             stage.status = StageStatus.running
+        #
+        # check_stage_status()
+
         if self.max_cores is not None:
             self.log.info('Ensuring there are enough cores...')
             # make sure we've got enough cores
             for t in task_queue:
                 assert int(t.core_req) <= self.max_cores, '%s requires more cpus (%s) than `max_cores` (%s)' % (t, t.core_req, self.max_cores)
-
 
         # Run this thing!
         self.log.info('Committing to SQL db...')
@@ -439,8 +553,21 @@ def _run(workflow, session, task_queue):
     Do the workflow!
     """
     workflow.log.info('Executing TaskGraph')
-    available_cores = True
 
+    watcher = SignalWatcher(workflow)
+
+    # graph_failed = nx.DiGraph()
+    #
+    # def handler(signal, frame):
+    #     task_queue.add_edges(graph_failed.edges())
+    #     for task in graph_failed.nodes():
+    #         task.attempt +=1
+    #         task.status = TaskStatus.no_attempt
+    #     graph_failed.remove_nodes_from(graph_failed.nodes())
+
+    # signal.signal(signal.SIGUSR1, handler)
+
+    available_cores = True
     while len(task_queue) > 0:
         if available_cores:
             _run_queued_and_ready_tasks(task_queue, workflow)
@@ -473,24 +600,26 @@ def _run(workflow, session, task_queue):
 
         # only commit Task changes after processing a batch of finished ones
         session.commit()
-        
-        workflow.log.info('Finishing workflow')
-        # _process_finished_tasks(workflow.jobmanager)
-        # workflow.terminate(due_to_failure=False)
-        return
 
-        watcher.wait(workflow.jobmanager.poll_interval)
+        time.sleep(workflow.jobmanager.poll_interval)
+
         if watcher.caught_signal():
             workflow.log.info('Interrupting workflow to handle signal %d', watcher.last_signal)
             workflow.terminate(due_to_failure=False)
             return
 
 
+import networkx as nx
+
+
 def _run_queued_and_ready_tasks(task_queue, workflow):
     max_cores = workflow.max_cores
+    
     # ready_tasks = [task for task, degree in list(task_queue.in_degree().items()) if
+    #               degree == 0 and task.status == TaskStatus.no_attempt]
+    
     ready_tasks = [task for task, degree in list(task_queue.in_degree()) if
-                   degree == 0 and task.status == TaskStatus.no_attempt]
+                    degree == 0 and task.status == TaskStatus.no_attempt]
 
     if max_cores is None:
         submittable_tasks = ready_tasks
@@ -533,24 +662,17 @@ def handle_exits(workflow, do_atexit=True):
     if do_atexit:
         @atexit.register
         def cleanup_check():
-            try:
-                should_terminate = False
-                try:
-                    if workflow.status == WorkflowStatus.running:
-                        msg = '%s Still running when atexit() was called' % workflow
-                        should_terminate = True
-                except SQLAlchemyError:
-                    msg = '%s Unknown status when atexit() was called (sql error)' % workflow
-                    should_terminate = True
+            if workflow.status == WorkflowStatus.running:
+                workflow.log.error('Workflow %s has a status of running atexit!' % workflow)
+                workflow.terminate(due_to_failure=True)
+                # raise SystemExit('Workflow terminated due to the python interpreter exiting')
 
-                if should_terminate:
-                    workflow.log.error(msg + ', terminating')
-                    workflow.terminate(due_to_failure=True)
-            finally:
-                workflow.log.info('%s Ceased work: this is its final log message', workflow)
+            workflow.log.info('Ceased work on %s: this is its final log message', workflow)
 
 
 def _copy_graph(graph):
+    import networkx as nx
+
     graph2 = nx.DiGraph()
     graph2.add_edges_from(graph.edges())
     graph2.add_nodes_from(graph.nodes())
