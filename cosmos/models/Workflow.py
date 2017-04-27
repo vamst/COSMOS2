@@ -569,7 +569,7 @@ def _run(workflow, session, task_queue):
     # signal.signal(signal.SIGUSR1, handler)
 
     available_cores = True
-    while len(task_queue) > 0:
+    while len(task_queue) > 1:
         print("Tasks to do: {}".format(len(task_queue)))
         if available_cores:
             _run_queued_and_ready_tasks(task_queue, workflow)
@@ -577,7 +577,7 @@ def _run(workflow, session, task_queue):
 
         # print(_process_finished_tasks(workflow.jobmanager))
         # print(list(workflow.jobmanager.get_finished_tasks()))
-        print(task_queue)
+        # print(task_queue)
 
         for task in _process_finished_tasks(workflow.jobmanager):
             print("Current task: {}".format(task))
