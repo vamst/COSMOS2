@@ -13,9 +13,8 @@ import datetime
 
 
 @signal_stage_status_change.connect
-def stage_status_changed(stage):
-    if stage.status not in [StageStatus.no_attempt]:
-        stage.log.info('%s %s (%s/%s Tasks were successful)' % (stage, stage.status, sum(t.successful for t in stage.tasks), len(stage.tasks)))
+def task_status_changed(stage):
+    stage.log.info('%s %s (%s/%s Tasks were successful)' % (stage, stage.status, sum(t.successful for t in stage.tasks), len(stage.tasks)))
 
     if stage.status == StageStatus.successful:
         stage.successful = True
@@ -24,6 +23,8 @@ def stage_status_changed(stage):
         stage.started_on = datetime.datetime.now()
     elif stage.status in [StageStatus.successful, StageStatus.failed, StageStatus.killed]:
         stage.finished_on = datetime.datetime.now()
+
+    stage.session.commit()
 
 
 class StageEdge(Base):
@@ -48,13 +49,13 @@ class Stage(Base):
 
     id = Column(Integer, primary_key=True)
     number = Column(Integer)
-    name = Column(String(255), nullable=False)
+    name = Column(String(255))
     started_on = Column(DateTime)
     workflow_id = Column(ForeignKey('workflow.id', ondelete="CASCADE"), nullable=False, index=True)
     started_on = Column(DateTime)
     finished_on = Column(DateTime)
     successful = Column(Boolean, nullable=False, default=False)
-    _status = Column(Enum34_ColumnType(StageStatus), default=StageStatus.no_attempt, nullable=False)
+    _status = Column(Enum34_ColumnType(StageStatus), default=StageStatus.no_attempt)
     parents = relationship("Stage",
                            secondary=StageEdge.__table__,
                            primaryjoin=id == StageEdge.parent_id,
@@ -86,6 +87,11 @@ class Stage(Base):
     def __iter__(self):
         for t in self.tasks:
             yield t
+    
+    def __lt__(self, other):
+        return True
+        # return ("%s, %s" % (self.last, self.first) <
+        #          "%s, %s" % (other.last, other.first))
 
     def __getitem__(self, key):
         return self.tasks[key]
@@ -116,23 +122,23 @@ class Stage(Base):
     def log(self):
         return self.workflow.log
 
-    def delete(self, descendants=False):
+    def delete(self, delete_files=False, delete_descendants=False):
         """
         Deletes this stage
         :param delete_files: Delete all files (will be slow if there are a lot of files)
-        :param descendants: Also delete all delete_descendants of this stage
+        :param delete_descendants: Also delete all delete_descendants of this stage
         :return: None
         """
+        if delete_descendants:
+            self.log.info('Deleting all delete_descendants of %s' % self)
+            for stage in reversed(list(self.descendants())):
+                stage.delete(delete_files)
 
-        if descendants:
-            stages_to_delete = self.descendants(include_self=False)
-            self.log.info('Deleting %s and all of its descendants: %s' % (self, stages_to_delete))
-            for stage in list(stages_to_delete) + [self]:
-                self.session.delete(stage)
-        else:
-            self.log.info('Deleting %s' % self)
-            self.session.delete(self)
-
+        self.log.info('Deleting %s. delete_files=%s' % (self, delete_files))
+        if delete_files:
+            for t in self.tasks:
+                t.delete(delete_files=True)
+        self.session.delete(self)
         self.session.commit()
 
     def filter_tasks(self, **filter_by):

@@ -2,7 +2,6 @@ import os
 import itertools as it
 import shutil
 import codecs
-import networkx as nx
 import subprocess as sp
 from sqlalchemy.orm import relationship, synonym, backref
 from sqlalchemy.ext.declarative import declared_attr
@@ -83,12 +82,15 @@ def task_status_changed(task):
                 task.log.error('%s has failed too many times' % task)
                 task.finished_on = datetime.datetime.now()
                 task.stage.status = StageStatus.running_but_failed
+                # task.session.commit()
 
     elif task.status == TaskStatus.successful:
         task.successful = True
         task.finished_on = datetime.datetime.now()
         if all(t.successful or not t.must_succeed for t in task.stage.tasks):
             task.stage.status = StageStatus.successful
+
+            # task.session.commit()
 
 
 # task_edge_table = Table('task_edge', Base.metadata,
@@ -109,7 +111,7 @@ def readfile(path):
     try:
         with codecs.open(path, "r", "utf-8") as fh:
             s = fh.read(2 ** 20)
-            if len(s) == 2 ** 20:
+            if len(s) == 2**20:
                 s += '\n*****TRUNCATED, check log file for full output*****'
             return s
     except:
@@ -144,23 +146,24 @@ class Task(Base):
     id = Column(Integer, primary_key=True)
     uid = Column(String(255), index=True)
 
-    mem_req = Column(Integer)
-    core_req = Column(Integer)
+    mem_req = Column(Integer, default=None)
+    core_req = Column(Integer, default=1)
     cpu_req = synonym('core_req')
     time_req = Column(Integer)
-    NOOP = Column(Boolean, nullable=False)
-    params = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
+    NOOP = Column(Boolean, default=False, nullable=False)
+    #params = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
+    params = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='')
     stage_id = Column(ForeignKey('stage.id', ondelete="CASCADE"), nullable=False, index=True)
     log_dir = Column(String(255))
     # output_dir = Column(String(255))
-    _status = Column(Enum34_ColumnType(TaskStatus), default=TaskStatus.no_attempt, nullable=False)
-    successful = Column(Boolean, nullable=False)
+    _status = Column(Enum34_ColumnType(TaskStatus), default=TaskStatus.no_attempt)
+    successful = Column(Boolean, default=False, nullable=False)
     started_on = Column(DateTime)  # FIXME this should probably be deleted.  Too hard to determine.
     submitted_on = Column(DateTime)
     finished_on = Column(DateTime)
-    attempt = Column(Integer, nullable=False)
-    must_succeed = Column(Boolean, nullable=False)
-    drm = Column(String(255))
+    attempt = Column(Integer, default=1)
+    must_succeed = Column(Boolean, default=True)
+    drm = Column(String(255), nullable=False)
     queue = Column(String(255))
     parents = relationship("Task",
                            secondary=TaskEdge.__table__,
@@ -171,9 +174,11 @@ class Task(Base):
                            cascade="save-update, merge, delete",
                            )
 
-    input_map = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
-    output_map = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
-
+    #input_map = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
+    #output_map = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
+    input_map = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='')
+    output_map = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='')
+    
     @property
     def input_files(self):
         return list(self.input_map.values())
@@ -224,7 +229,8 @@ class Task(Base):
     avg_num_fds = Column(Integer)
     max_num_fds = Column(Integer)
 
-    extra = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
+    #extra = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='{}')
+    extra = Column(MutableDict.as_mutable(JSONEncodedDict), nullable=False, server_default='')
 
     @declared_attr
     def status(cls):
@@ -278,21 +284,26 @@ class Task(Base):
         # return self.command
         return readfile(self.output_command_script_path).strip() or self.command
 
-    def descendants(self, include_self=False):
+    def all_predecessors(self, as_dict=False):
         """
-        :return: (list) all stages that descend from this stage in the stage_graph
+        :return: (list) all tasks that descend from this task in the task_graph
         """
-        x = nx.descendants(self.workflow.task_graph(), self)
-        if include_self:
-            return sorted({self}.union(x), key=lambda task: task.stage.number)
-        else:
-            return x
+        d = breadth_first_search.bfs_predecessors(self.workflow.task_graph().reverse(copy=False), self)
+        if as_dict:
+            return d
+        return set(d.values())
+
+    def all_successors(self):
+        """
+        :return: (list) all tasks that descend from this task in the task_graph
+        """
+        return set(breadth_first_search.bfs_successors(self.workflow.task_graph(), self).values())
 
     @property
     def label(self):
         """Label used for the taskgraph image"""
         params = '' if len(self.params) == 0 else "\\n {0}".format(
-            "\\n".join(["{0}: {1}".format(k, v) for k, v in list(self.params.items())]))
+                "\\n".join(["{0}: {1}".format(k, v) for k, v in list(self.params.items())]))
 
         return "[%s] %s%s" % (self.id, self.stage.name, params)
 
@@ -301,16 +312,15 @@ class Task(Base):
 
         return urllib.parse.urlencode(self.params)
 
-    def delete(self, descendants=False):
-        if descendants:
-            tasks_to_delete = self.descendants(include_self=True)
-            self.log.debug('Deleting %s and %s of its descendants' % (self, len(tasks_to_delete) - 1))
-            for t in tasks_to_delete:
-                self.session.delete(t)
-        else:
-            self.log.debug('Deleting %s' % self)
-            self.session.delete(self)
+    def delete(self, delete_files=False):
+        self.log.debug('Deleting %s' % self)
+        if delete_files:
+            for tf in self.output_files:
+                os.unlink(tf)
+            if os.path.exists(self.log_dir):
+                shutil.rmtree(self.log_dir)
 
+        self.session.delete(self)
         self.session.commit()
 
     @property
@@ -327,9 +337,9 @@ class Task(Base):
 
     def __repr__(self):
         return "<Task[%s] %s(uid='%s')>" % (self.id or 'id_%s' % id(self),
-                                            self.stage.name if self.stage else '',
-                                            self.uid
-                                            )
+                                      self.stage.name if self.stage else '',
+                                      self.uid
+                                      )
 
     def __str__(self):
         return self.__repr__()
