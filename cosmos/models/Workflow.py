@@ -571,6 +571,7 @@ def _run(workflow, session, task_queue):
     available_cores = True
     while len(task_queue) > 1:
         print("Tasks to do: {}".format(len(task_queue)))
+        print(list(task_queue))
         if available_cores:
             _run_queued_and_ready_tasks(task_queue, workflow)
             available_cores = False
