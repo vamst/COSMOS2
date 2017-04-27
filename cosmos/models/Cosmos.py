@@ -12,7 +12,7 @@ import math
 from datetime import datetime
 
 
-def default_get_submit_args(task, parallel_env='orte'):
+def default_get_submit_args(task, parallel_env='orte', group_name='Sample10018_StdPipeline'):
     """
     Default method for determining the extra arguments to pass to the DRM.
     For example, returning `"-n 3" if` `task.drm == "lsf"` would cause all jobs
@@ -42,9 +42,9 @@ def default_get_submit_args(task, parallel_env='orte'):
         if(task.mem_req): m_usage =  '--memory={}M '.format(task.mem_req)
         else: m_usage = '--memory=1024M '
         if(task.time_req): t_usage =  '--runtime={}m '.format(task.time_req)
-        else: t_usage = '--runtime=10m '
+        else: t_usage = '--runtime=60m '
 
-        return '{c_usage} {m_usage} {t_usage} --group-name=wf_test'.format(**locals())
+        return '{c_usage} {m_usage} {t_usage} --group-name={group_name}'.format(**locals())
 
     elif task.drm == 'local':
         return None
