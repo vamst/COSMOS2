@@ -22,6 +22,7 @@ STATUSES = {
 '999': 'UNKNOWN',
 '1000': 'FINISHED',
 '1024': 'EXIT',
+False: 'FAILED_TO_DETERMINE',
 }
 
 class DRM_MXQ(DRM):
@@ -58,6 +59,7 @@ class DRM_MXQ(DRM):
                 else:
                     return False
 
+            bjobs = bjobs_all()
             res = []
             for task in tasks:
                 if is_done(task):
