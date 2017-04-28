@@ -39,8 +39,14 @@ def default_get_submit_args(task, parallel_env='orte', group_name='Sample10018_S
     elif task.drm == 'mxq':
         if(task.core_req): c_usage =  '--threads={} '.format(task.core_req)
         else: c_usage = '--threads=1 '
-        if(task.mem_req): m_usage =  '--memory={}M '.format(task.mem_req)
-        else: m_usage = '--memory=1024M '
+
+        if(task.mem_req):
+            if task.mem_req < 10*1024: t = 10*1024
+            else: t = task.mem_req
+            m_usage =  '--memory={}M '.format(t)
+
+        else: m_usage = '--memory=102400M '
+
         if(task.time_req): t_usage =  '--runtime={}m '.format(task.time_req)
         else: t_usage = '--runtime=60m '
 
