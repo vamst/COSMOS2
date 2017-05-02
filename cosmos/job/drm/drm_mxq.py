@@ -57,6 +57,9 @@ class DRM_MXQ(DRM):
                 if int(status) >= 350: 
                     return True
                 else:
+                    print("Job {} failed".format(task.drm_jobID))
+                    print("status: {}".format(status))
+                    print("status: {}".format(STATUSES[status]))
                     return False
 
             bjobs = bjobs_all()
