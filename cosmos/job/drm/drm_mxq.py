@@ -132,7 +132,7 @@ def get_status_from_jid(jid):
     except:
         resp = False
 
-    if resp and len(resp)>3 and resp.isdigit():
+    if resp and len(resp)>=3 and resp.isdigit():
         return resp
     else:
         return False
