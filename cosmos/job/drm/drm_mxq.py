@@ -28,7 +28,6 @@ False: 'FAILED_TO_DETERMINE',
 class DRM_MXQ(DRM):
     name = 'mxq'
     poll_interval = 5
-    # poll_interval = 50
 
     def submit_job(self, task):
         ns = ' ' + task.drm_native_specification if task.drm_native_specification else ''
@@ -54,7 +53,8 @@ class DRM_MXQ(DRM):
             def is_done(task):
                 jid = str(task.drm_jobID)
                 status = get_status_from_jid(jid)
-                if int(status) >= 350: 
+                if STATUSES[status] in ('KILLED', 'FAILED', 'FINISHED', 'EXIT'): 
+                # if int(status) >= 350: 
                     return True
                 else:
                     # print("Job {} failed".format(task.drm_jobID))
@@ -137,13 +137,15 @@ def get_status_from_jid(jid):
     else:
         return False
 
-
+# TODO: use mysql API
 def bjobs_all():
     user_name = 'amstisla'
     user_id = '1991'
+
     header = False
     bjobs = {}
-    for i in os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e "select * from mxq_job where (group_id) in \
+    for i in os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e \
+        "select * from mxq_job where (group_id) in \
         (select group_id from mxq_group where user_name=\'{}\');"'.format(user_name)).readlines():
         if not header:
             header = i.split()
