@@ -51,15 +51,15 @@ class DRM_MXQ(DRM):
     def filter_is_done(self, tasks):
         if len(tasks):
             def is_done(task):
-                jid = str(task.drm_jobID)
-                status = get_status_from_jid(jid)
-                if STATUSES[status] in ('KILLED', 'FAILED', 'FINISHED', 'EXIT'): 
-                # if int(status) >= 350: 
+                try:
+                    jid = str(task.drm_jobID)
+                    status = STATUSES[get_status_from_jid(jid)]
+                except:
+                    return False
+
+                if status in ('KILLED', 'FAILED', 'FINISHED', 'EXIT'): 
                     return True
                 else:
-                    # print("Job {} failed".format(task.drm_jobID))
-                    # print("status: {}".format(status))
-                    # print("status: {}".format(STATUSES[status]))
                     return False
 
             bjobs = bjobs_all()
@@ -98,7 +98,7 @@ class DRM_MXQ(DRM):
 
     def kill_tasks(self, tasks):
         for t in tasks:
-            sp.check_call(['mxqkill', '-J', str(t.drm_jobID)])
+            # sp.check_call(['mxqkill', '-J', str(t.drm_jobID)])
             g = get_gid_from_jid(t.drm_jobID)
             if g:
                 sp.check_call(['mxqkill', '-g', str(g)])
