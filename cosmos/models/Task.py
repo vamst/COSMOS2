@@ -277,6 +277,14 @@ class Task(Base):
                     r += codecs.decode(sp.check_output('bpeek %s' % self.drm_jobID, shell=True), 'utf-8')
                 except Exception as e:
                     r += str(e)
+            if self.drm == 'mxq' and self.drm_jobID:
+                r += '\n\mxq %s output:\n\n' % self.drm_jobID
+                try:
+                    f = [x for x in os.listdir(os.path.dirname(self.output_stdout_path)) if 'mxq.1991.' in x][0]
+                    r += readfile(f)
+                except Exception as e:
+                    r += str(e)
+
         return r
 
     @property
