@@ -100,7 +100,7 @@
                         <td>{{ t.successful|to_thumb }}</td>
                         <td>{{ t.status }}</td>
                         <td>{{ drm_statuses.get(t.drm_jobID,'') }}</td>
-                        <th>{{ t.drm_jobID }}</th>
+                        <th>{{ t.drm_jobID }}<a target="_blank" href="http://afk.molgen.mpg.de/mxq/mxq/job/{{ t.drm_jobID }}">[MPI]</a></th>
                         <td>{{ t.attempt }}</td>
                         <td>{{ t.submitted_on|datetime_format }}</td>
                         <td>{{ t.finished_on|datetime_format }}</td>
