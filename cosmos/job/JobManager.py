@@ -106,8 +106,12 @@ class JobManager(object):
         #             setattr(task, k, v)
         #         yield task
 
-        drm = 'mxq'
-        for task, job_info_dict in self.get_drm('mxq').filter_is_done(self.running_tasks):
+        # drm = 'mxq'
+        try:
+            drm = self.running_tasks[0].drm
+        except:
+            drm = 'local'
+        for task, job_info_dict in self.get_drm(drm).filter_is_done(self.running_tasks):
             self.running_tasks.remove(task)
             for k, v in list(job_info_dict.items()):
                 setattr(task, k, v)
