@@ -157,7 +157,8 @@ def bjobs_all():
             # elif get_status_from_jid(fs[0]) == '1000':
             #     bjobs[fs[0]]['exit_status'] = 0
             else:
-                bjobs[fs[0]]['exit_status'] = 1
+                bjobs[fs[0]]['exit_status'] = bjobs[fs[0]]['job_status']
+                
             bjobs[fs[0]]['status'] = STATUSES[bjobs[fs[0]]['job_status']].lower()
             bjobs[fs[0]]['job'] = '{}({}):{}:{}'.format(user_name, user_id, bjobs[fs[0]]['group_id'], bjobs[fs[0]]['job_id'])
     return bjobs

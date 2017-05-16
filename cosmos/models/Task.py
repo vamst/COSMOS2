@@ -34,7 +34,6 @@ class GetOutputError(Exception): pass
 
 task_failed_printout = """Failure Info:
 <TASK STATUS="{0.status}">
-<TASK _STATUS="{0._status}">
 <EXIT_STATUS="{0.exit_status}">
 <COMMAND path="{0.output_command_script_path}" drm_jobID="{0.drm_jobID}">
 <PARAMS>
