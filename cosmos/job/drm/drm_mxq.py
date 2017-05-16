@@ -154,8 +154,8 @@ def bjobs_all():
             bjobs[fs[0]] = dict(list(zip(header, fs)))
             if bjobs[fs[0]]['job_status'] == '1000':
                 bjobs[fs[0]]['exit_status'] = 0
-            # elif get_status_from_jid(fs[0]) == '1000':
-            #     bjobs[fs[0]]['exit_status'] = 0
+            elif get_status_from_jid(fs[0]) == '1000':
+                bjobs[fs[0]]['exit_status'] = 0
             else:
                 bjobs[fs[0]]['exit_status'] = 1
             bjobs[fs[0]]['status'] = STATUSES[bjobs[fs[0]]['job_status']].lower()
