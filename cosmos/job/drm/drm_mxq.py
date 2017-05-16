@@ -22,7 +22,6 @@ STATUSES = {
 '999': 'UNKNOWN',
 '1000': 'FINISHED',
 '1024': 'EXIT',
-False: 'FAILED_TO_DETERMINE',
 }
 
 class DRM_MXQ(DRM):
@@ -57,7 +56,6 @@ class DRM_MXQ(DRM):
                 except:
                     return False
 
-                
                 if status in ('KILLED', 'FAILED', 'FINISHED', 'EXIT'): 
                     return True
                 else:
@@ -119,12 +117,12 @@ def get_gid_from_jid(jid):
         resp =  os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e \
             "select group_id from mxq_job where job_id={}"'.format(jid)).readlines()[-1].strip()
     except:
-        resp = False
+        resp = '999'
 
     if resp and len(resp)>3 and resp.isdigit():
         return resp
     else:
-        return False
+        return '999'
 
 def get_status_from_jid(jid):
     try:
@@ -156,8 +154,8 @@ def bjobs_all():
             bjobs[fs[0]] = dict(list(zip(header, fs)))
             if bjobs[fs[0]]['job_status'] == '1000':
                 bjobs[fs[0]]['exit_status'] = 0
-            elif get_status_from_jid(fs[0]) == '1000':
-                bjobs[fs[0]]['exit_status'] = 0
+            # elif get_status_from_jid(fs[0]) == '1000':
+            #     bjobs[fs[0]]['exit_status'] = 0
             else:
                 bjobs[fs[0]]['exit_status'] = 1
             bjobs[fs[0]]['status'] = STATUSES[bjobs[fs[0]]['job_status']].lower()
