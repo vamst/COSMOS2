@@ -70,6 +70,7 @@ def task_status_changed(task):
             task.log.warn(task_failed_printout.format(task))
             task.finished_on = datetime.datetime.now()
         else:
+            task.log.warn(task.status)
             task.log.warn('%s attempt #%s failed (max_attempts=%s)' % (task, task.attempt, task.workflow.max_attempts))
             if task.attempt < task.workflow.max_attempts:
                 task.log.warn(task_failed_printout.format(task))

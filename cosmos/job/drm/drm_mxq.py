@@ -57,6 +57,7 @@ class DRM_MXQ(DRM):
                 except:
                     return False
 
+                
                 if status in ('KILLED', 'FAILED', 'FINISHED', 'EXIT'): 
                     return True
                 else:
@@ -146,13 +147,16 @@ def bjobs_all():
     bjobs = {}
     for i in os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e \
         "select * from mxq_job where (group_id) in \
-        (select group_id from mxq_group where user_name=\'{}\');"'.format(user_name)).readlines():
+        (select group_id from mxq_group where user_name=\'{}\' \
+            and date_submit>DATE_SUB(NOW(), INTERVAL 10 DAY) );"'.format(user_name)).readlines():
         if not header:
             header = i.split()
         else:
             fs = i.split()
             bjobs[fs[0]] = dict(list(zip(header, fs)))
             if bjobs[fs[0]]['job_status'] == '1000':
+                bjobs[fs[0]]['exit_status'] = 0
+            elif get_status_from_jid(fs[0]) == '1000':
                 bjobs[fs[0]]['exit_status'] = 0
             else:
                 bjobs[fs[0]]['exit_status'] = 1
