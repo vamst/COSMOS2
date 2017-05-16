@@ -61,11 +61,12 @@ class DRM_MXQ(DRM):
                 else:
                     return False
 
-            bjobs = bjobs_all()
+            # bjobs = bjobs_all()
             res = []
             for task in tasks:
                 if is_done(task):
-                    res.append((task, bjobs[str(task.drm_jobID)]))
+                    # res.append((task, bjobs[str(task.drm_jobID)]))
+                    res.append((task, bjobs_single(str(task.drm_jobID))))
             return res
 
         else:
@@ -117,52 +118,73 @@ def get_gid_from_jid(jid):
         resp =  os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e \
             "select group_id from mxq_job where job_id={}"'.format(jid)).readlines()[-1].strip()
     except:
-        resp = '999'
+        resp = False
 
     if resp and len(resp)>3 and resp.isdigit():
         return resp
     else:
-        return '999'
+        return False
 
 def get_status_from_jid(jid):
     try:
         resp =  os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e \
             "select job_status from mxq_job where job_id={}"'.format(jid)).readlines()[-1].strip()
     except:
-        resp = False
+        resp = '999'
 
     if resp and len(resp)>=3 and resp.isdigit():
         return resp
     else:
-        return False
+        return '999'
+
 
 # TODO: use mysql API
-def bjobs_all():
-    user_name = 'amstisla'
-    user_id = '1991'
-
+def bjobs_single(jid):
     header = False
     bjobs = {}
-    for i in os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e \
-        "select * from mxq_job where (group_id) in \
-        (select group_id from mxq_group where user_name=\'{}\' \
-            and date_submit>DATE_SUB(NOW(), INTERVAL 3 DAY) );"'.format(user_name)).readlines():
-        if not header:
-            header = i.split()
-        else:
-            fs = i.split()
-            bjobs[fs[0]] = dict(list(zip(header, fs)))
-            if bjobs[fs[0]]['job_status'] in ('0', '1000'):
-                bjobs[fs[0]]['exit_status'] = 0
-            # elif get_status_from_jid(fs[0]) == '1000':
-            #     bjobs[fs[0]]['exit_status'] = 0
-            else:
-                # bjobs[fs[0]]['exit_status'] = 1
-                bjobs[fs[0]]['exit_status'] = bjobs[fs[0]]['job_status']
 
-            bjobs[fs[0]]['status'] = STATUSES[bjobs[fs[0]]['job_status']].lower()
-            bjobs[fs[0]]['job'] = '{}({}):{}:{}'.format(user_name, user_id, bjobs[fs[0]]['group_id'], bjobs[fs[0]]['job_id'])
-    return bjobs
+    resp =  os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e \
+    "select * from mxq_job where job_id={}"'.format(jid)).readlines()
+
+    info = dict(list(zip(resp[0].strip().split(), resp[1].strip().split())))
+    if info['job_status'] in ('0', '1000'):
+        info['exit_status'] = 0
+    else:
+        # info['exit_status'] = 1
+        info['exit_status'] = info['job_status']
+    info['status'] = STATUSES[info['job_status']].lower()
+    user_name = 'amstisla'
+    user_id = '1991'
+    info['job'] = '{}({}):{}:{}'.format(user_name, user_id, info['group_id'], info['job_id'])
+    return info
+
+# # TODO: use mysql API
+# def bjobs_all():
+#     user_name = 'amstisla'
+#     user_id = '1991'
+
+#     header = False
+#     bjobs = {}
+#     for i in os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e \
+#         "select * from mxq_job where (group_id) in \
+#         (select group_id from mxq_group where user_name=\'{}\' \
+#             and date_submit>DATE_SUB(NOW(), INTERVAL 3 DAY) );"'.format(user_name)).readlines():
+#         if not header:
+#             header = i.split()
+#         else:
+#             fs = i.split()
+#             bjobs[fs[0]] = dict(list(zip(header, fs)))
+#             if bjobs[fs[0]]['job_status'] in ('0', '1000'):
+#                 bjobs[fs[0]]['exit_status'] = 0
+#             # elif get_status_from_jid(fs[0]) == '1000':
+#             #     bjobs[fs[0]]['exit_status'] = 0
+#             else:
+#                 # bjobs[fs[0]]['exit_status'] = 1
+#                 bjobs[fs[0]]['exit_status'] = bjobs[fs[0]]['job_status']
+
+#             bjobs[fs[0]]['status'] = STATUSES[bjobs[fs[0]]['job_status']].lower()
+#             bjobs[fs[0]]['job'] = '{}({}):{}:{}'.format(user_name, user_id, bjobs[fs[0]]['group_id'], bjobs[fs[0]]['job_id'])
+#     return bjobs
 
 
 # def bjobs_all():
