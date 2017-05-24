@@ -56,7 +56,7 @@ def default_get_submit_args(task, parallel_env='orte', group_name='WF1'):
             gid = os.popen('''
                 mysql -u ronly -p1234 -A --host mxq -D mxq -e \
                     "select group_id from mxq_group where group_name='{}' order by group_id desc limit 1"
-                '''.format(group_name)).readlines()[-1].strip().split()
+                '''.format(group_name)).readlines()[-1].strip()
             if gid.isdigit(): group_id_opt = '-g '+gid
         except: pass
 
