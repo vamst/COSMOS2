@@ -110,12 +110,11 @@ class DRM_MXQ(DRM):
         # os.system('bkill {0}'.format(task.drm_jobID))
 
     def kill_tasks(self, tasks):
-        pass
-        # for t in tasks:
-        #     # sp.check_call(['mxqkill', '-J', str(t.drm_jobID)])
-        #     g = get_gid_from_jid(t.drm_jobID)
-        #     if g:
-        #         sp.check_call(['mxqkill', '-g', str(g)])
+        for t in tasks:
+            # sp.check_call(['mxqkill', '-J', str(t.drm_jobID)])
+            g = get_gid_from_jid(t.drm_jobID)
+            if g:
+                sp.check_call(['mxqkill', '-g', str(g)])
 
 def get_gid_from_jid(jid):
     try:
