@@ -43,14 +43,14 @@ class DRM_MXQ(DRM):
         except: pass
 
         ns = ' ' + task.drm_native_specification if task.drm_native_specification else ''
-        bsub = 'mxqsub {group_id_opt} --stdout {stdout} --stderr {stderr}{ns} '.format(
-            group_id_opt=group_id_opt,
+        bsub = 'mxqsub --stdout {stdout} --stderr {stderr}{ns} '.format(
             stdout=task.output_stdout_path,
             stderr=task.output_stderr_path,
             ns=ns)
 
         out = sp.check_output(
-            '{bsub} {cmd_str}'.format(
+            '{bsub} {group_id_opt} {cmd_str}'.format(
+                group_id_opt=group_id_opt,
                 cmd_str=task.output_command_script_path,
                 bsub=bsub
             ),
