@@ -30,17 +30,17 @@ class DRM_MXQ(DRM):
 
     def submit_job(self, task):
         group_id_opt = ''
-        try:
-            mysql_state = '''
-                mysql -u ronly -p1234 -A --host mxq -D mxq -e \
-                    "select group_id from mxq_group where \
-                        group_name='{}' and group_status=0 \
-                        order by group_id desc limit 1" 
-            '''.format(task.stage.workflow.name)
+        # try:
+        #     mysql_state = '''
+        #         mysql -u ronly -p1234 -A --host mxq -D mxq -e \
+        #             "select group_id from mxq_group where \
+        #                 group_name='{}' and group_status=0 \
+        #                 order by group_id desc limit 1" 
+        #     '''.format(task.stage.workflow.name)
 
-            gid = os.popen(mysql_state).readlines()[-1].strip()
-            if gid.isdigit(): group_id_opt = '-g '+gid
-        except: pass
+        #     gid = os.popen(mysql_state).readlines()[-1].strip()
+        #     if gid.isdigit(): group_id_opt = '-g '+gid
+        # except: pass
 
         ns = ' ' + task.drm_native_specification if task.drm_native_specification else ''
         bsub = 'mxqsub --stdout {stdout} --stderr {stderr}{ns} '.format(
@@ -54,7 +54,7 @@ class DRM_MXQ(DRM):
                 cmd_str=task.output_command_script_path,
                 bsub=bsub)
             
-        print(fcmd)
+        # print(fcmd)
         out = sp.check_output(
             fcmd,
           env=os.environ,
