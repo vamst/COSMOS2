@@ -59,13 +59,6 @@ class JobManager(object):
             task.drm_native_specification = self.get_submit_args(task)
             assert task.drm is not None, 'task has no drm set'
 
-            drm_jobID = self.get_drm(task.drm).submit_job(task)
-            if ';' in drm_jobID: drm_jobID, drm_groupID = drm_jobID.split(';')
-            else: drm_groupID = ''
-
-            if drm_groupID != '' and '_group_id_' not in task.stage.workflow.name:
-                task.stage.workflow.name += '_group_id_{}'.format(drm_groupID)
-
             assert isinstance(drm_jobID, str)
             task.drm_jobID = drm_jobID
 

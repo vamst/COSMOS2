@@ -45,8 +45,7 @@ class DRM_MXQ(DRM):
           shell=True).decode('utf8')
 
         drm_jobID = re.search('mxq_job_id=(\d+)', out).group(1)
-        drm_groupID = re.search('mxq_group_id=(\d+)', out).group(1)
-        return '{};{}'.format(drm_jobID, drm_groupID)
+        return drm_jobID
 
     def filter_is_done(self, tasks):
         if len(tasks):
