@@ -12,7 +12,7 @@ import math
 from datetime import datetime
 
 
-def default_get_submit_args(task, parallel_env='orte', group_name='WF'):
+def default_get_submit_args(task, parallel_env='orte', group_name='WF1'):
     """
     Default method for determining the extra arguments to pass to the DRM.
     For example, returning `"-n 3" if` `task.drm == "lsf"` would cause all jobs
@@ -52,7 +52,7 @@ def default_get_submit_args(task, parallel_env='orte', group_name='WF'):
         group_id_opt = ''
         try:
             gid = os.popen('''
-                mysql -u ronly -p1234 -A --host mxq -D mxq -e 
+                mysql -u ronly -p1234 -A --host mxq -D mxq -e \
                     "select group_id from mxq_group where group_name='{}' order by group_id desc limit 1"
                 '''.format(task.stage.workflow.name)).readlines()[-1].strip().split()
             if gid.isdigit(): group_id_opt = '-g '+gid
