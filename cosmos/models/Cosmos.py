@@ -58,8 +58,16 @@ def default_get_submit_args(task, parallel_env='orte', group_name='WF1'):
                     "select group_id from mxq_group where \
                         group_name='{}' and group_status=0 AND \
                         (group_jobs_running > 0 OR group_jobs_inq > 0 OR group_jobs = 0) \
-                        order by group_id desc limit 1"
+                        order by group_id desc limit 1" 
             '''.format(group_name)
+            
+            mysql_state = '''
+                mysql -u ronly -p1234 -A --host mxq -D mxq -e \
+                    "select group_id from mxq_group where \
+                        group_name='{}' and group_status=0\
+                        order by group_id desc limit 1" 
+            '''.format(group_name)
+
             gid = os.popen(mysql_state).readlines()[-1].strip()
             if gid.isdigit(): group_id_opt = '-g '+gid
         except: pass
