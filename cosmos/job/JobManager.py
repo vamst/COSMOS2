@@ -56,9 +56,11 @@ class JobManager(object):
             task.log_dir = self.log_out_dir_func(task)
             mkdir(task.log_dir)
             _create_command_sh(task, command)
+            
             task.drm_native_specification = self.get_submit_args(task)
             assert task.drm is not None, 'task has no drm set'
 
+            drm_jobID = self.get_drm(task.drm).submit_job(task)
             assert isinstance(drm_jobID, str)
             task.drm_jobID = drm_jobID
 
