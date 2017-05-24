@@ -44,14 +44,16 @@ def default_get_submit_args(task, parallel_env='orte', group_name='WF'):
             if task.mem_req < 10*1024: t = 10*1024
             else: t = task.mem_req
             m_usage =  '--memory={}M '.format(t)
-
         else: m_usage = '--memory=102400M '
 
         if(task.time_req): t_usage =  '--runtime={}m '.format(task.time_req)
         else: t_usage = '--runtime=60m '
 
         group_name = task.stage.workflow.name
-        return '{c_usage} {m_usage} {t_usage} --group-name={group_name}'.format(**locals())
+        if '_group_id_' in group_name: 
+                group_id_opt = '-g '+group_name.split('_group_id_')[1]
+        else: group_id_opt = ''
+        return '{c_usage} {m_usage} {t_usage} {group_id_opt} --group-name={group_name}'.format(**locals())
 
     elif task.drm == 'local':
         return None

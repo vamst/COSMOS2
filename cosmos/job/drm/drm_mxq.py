@@ -45,7 +45,8 @@ class DRM_MXQ(DRM):
           shell=True).decode('utf8')
 
         drm_jobID = re.search('mxq_job_id=(\d+)', out).group(1)
-        return drm_jobID
+        drm_groupID = re.search('mxq_group_id=(\d+)', out).group(1)
+        return '{};{}'.format(drm_jobID, drm_groupID)
 
     def filter_is_done(self, tasks):
         if len(tasks):
@@ -65,7 +66,6 @@ class DRM_MXQ(DRM):
             res = []
             for task in tasks:
                 if is_done(task):
-                    # res.append((task, bjobs[str(task.drm_jobID)]))
                     res.append((task, bjobs_single(str(task.drm_jobID))))
             return res
 
@@ -102,16 +102,6 @@ class DRM_MXQ(DRM):
             g = get_gid_from_jid(t.drm_jobID)
             if g:
                 sp.check_call(['mxqkill', '-g', str(g)])
-
-
-# def get_gid_from_jid(jid):
-    # groups = [x.split('group_id=')[1].split(' ')[0] for x in os.popen('mxqdump').readlines() if 'group_id=' in x]
-    # for g in groups:
-    #     for opt in ('-q', '-r', '-f', '-F', '-K', '-C', '-U'):
-    #         for l in os.popen('mxqdump -j {opt} -g {g} 2> /dev/null'.format(**locals())).readlines():
-    #             if jid in l:
-    #                 return g
-    # return False
 
 def get_gid_from_jid(jid):
     try:
@@ -157,65 +147,3 @@ def bjobs_single(jid):
     user_id = '1991'
     info['job'] = '{}({}):{}:{}'.format(user_name, user_id, info['group_id'], info['job_id'])
     return info
-
-# # TODO: use mysql API
-# def bjobs_all():
-#     user_name = 'amstisla'
-#     user_id = '1991'
-
-#     header = False
-#     bjobs = {}
-#     for i in os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e \
-#         "select * from mxq_job where (group_id) in \
-#         (select group_id from mxq_group where user_name=\'{}\' \
-#             and date_submit>DATE_SUB(NOW(), INTERVAL 3 DAY) );"'.format(user_name)).readlines():
-#         if not header:
-#             header = i.split()
-#         else:
-#             fs = i.split()
-#             bjobs[fs[0]] = dict(list(zip(header, fs)))
-#             if bjobs[fs[0]]['job_status'] in ('0', '1000'):
-#                 bjobs[fs[0]]['exit_status'] = 0
-#             # elif get_status_from_jid(fs[0]) == '1000':
-#             #     bjobs[fs[0]]['exit_status'] = 0
-#             else:
-#                 # bjobs[fs[0]]['exit_status'] = 1
-#                 bjobs[fs[0]]['exit_status'] = bjobs[fs[0]]['job_status']
-
-#             bjobs[fs[0]]['status'] = STATUSES[bjobs[fs[0]]['job_status']].lower()
-#             bjobs[fs[0]]['job'] = '{}({}):{}:{}'.format(user_name, user_id, bjobs[fs[0]]['group_id'], bjobs[fs[0]]['job_id'])
-#     return bjobs
-
-
-# def bjobs_all():
-#     """
-#     returns a dict keyed by mxq job ids, who's values are a dict of mxqdump
-#     information about the job
-#     """
-#     # try:
-#     if True:
-#         lines = []
-#         groups = [x.split('group_id=')[1].split(' ')[0] for x in os.popen('mxqdump').readlines() if 'group_id=' in x]
-#         for g in groups:
-#             for opt in ('-q', '-r', '-f', '-F', '-K', '-C', '-U'):
-#                 out = os.popen('mxqdump -j {opt} -g {g} 2> /dev/null'.format(**locals())).readlines()
-#                 lines += out
-#     # except (sp.CalledProcessError, OSError):
-#     #     lines=[]
-
-#     if len(lines)>0 and '=' in lines[0]: header = [x.split('=')[0] for x in lines[0].split(' ') if '=' in x]
-#     else: header = []
-#     bjobs = {}
-
-#     for l in lines:
-#         if '=' not in l: continue
-#         items = [x.split('=')[1] for x in l.split(' ') if '=' in x]
-#         bjobs[items[0].split(':')[-1]] = dict(list(zip(header, items)))
-        
-#         status = bjobs[items[0].split(':')[-1]]['status'].split('(')[0]
-#         bjobs[items[0].split(':')[-1]]['status'] = status
-
-#         if 'finished' in status: bjobs[items[0].split(':')[-1]]['exit_status'] = 0
-#         else: bjobs[items[0].split(':')[-1]]['exit_status'] = 1
-
-#     return bjobs
