@@ -48,12 +48,15 @@ class DRM_MXQ(DRM):
             stderr=task.output_stderr_path,
             ns=ns)
 
-        out = sp.check_output(
-            '{bsub} {group_id_opt} {cmd_str}'.format(
+        
+        fcmd = '{bsub} {group_id_opt} {cmd_str}'.format(
                 group_id_opt=group_id_opt,
                 cmd_str=task.output_command_script_path,
-                bsub=bsub
-            ),
+                bsub=bsub)
+            
+        print(fcmd)
+        out = sp.check_output(
+            fcmd,
           env=os.environ,
           preexec_fn=exit_process_group,
           shell=True).decode('utf8')
