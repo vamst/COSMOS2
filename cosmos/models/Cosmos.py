@@ -48,13 +48,15 @@ def default_get_submit_args(task, parallel_env='orte', group_name='WF1'):
 
         if(task.time_req): t_usage =  '--runtime={}m '.format(task.time_req)
         else: t_usage = '--runtime=60m '
+        
+        group_name = task.stage.workflow.name
 
         group_id_opt = ''
         try:
             gid = os.popen('''
                 mysql -u ronly -p1234 -A --host mxq -D mxq -e \
                     "select group_id from mxq_group where group_name='{}' order by group_id desc limit 1"
-                '''.format(task.stage.workflow.name)).readlines()[-1].strip().split()
+                '''.format(group_name)).readlines()[-1].strip().split()
             if gid.isdigit(): group_id_opt = '-g '+gid
         except: pass
 
