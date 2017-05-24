@@ -72,7 +72,7 @@ def default_get_submit_args(task, parallel_env='orte', group_name='WF1'):
             if gid.isdigit(): group_id_opt = '-g '+gid
         except: pass
 
-        print('{c_usage} {m_usage} {t_usage} {group_id_opt} --group-name={group_name}'.format(**locals()))
+        # print('{c_usage} {m_usage} {t_usage} {group_id_opt} --group-name={group_name}'.format(**locals()))
         return '{c_usage} {m_usage} {t_usage} {group_id_opt} --group-name={group_name}'.format(**locals())
 
     elif task.drm == 'local':
