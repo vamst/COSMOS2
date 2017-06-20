@@ -95,7 +95,8 @@ class SignalWatcher(object):
     def _check_existing_handler(sig):
         prev_handler = signal.getsignal(sig)
         if prev_handler not in (signal.SIG_DFL, signal.SIG_IGN, signal.default_int_handler):
-            raise RuntimeError("a custom signal handler has already been set for signal %d: %s" % (sig, prev_handler))
+            prev_handler = signal.default_int_handler
+            # raise RuntimeError("a custom signal handler has already been set for signal %d: %s" % (sig, prev_handler))
 
     def explain(self, signum):
         names = []
