@@ -286,7 +286,7 @@ class Task(Base):
                 try:
                     f = os.path.join(
                         os.path.dirname(self.output_stdout_path),
-                        [x for x in os.listdir(os.path.dirname(self.output_stdout_path)) if 'mxq.1991.' in x and 'stderr.tmp' in x][0]
+                        [x for x in os.listdir(os.path.dirname(self.output_stdout_path)) if 'mxq.' in x and 'stderr.tmp' in x][0]
                     )
                     r += f+'\n\n'
                     r += readfile(f)

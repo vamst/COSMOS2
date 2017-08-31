@@ -41,6 +41,10 @@ install_requires = [
     'networkx', 
 ]
 
+dependency_links = [
+        'git+https://github.com/vamst/networkx.git#egg=networkx',
+]
+
 
 if sys.version_info < (3,):
     # package_dir = {'': 'cosmos'}
@@ -62,6 +66,7 @@ setup(
     maintainer_email="egafni@gmail.com",
     license="MIT",
     install_requires=install_requires,
+    dependency_links=dependency_links,
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     packages=find_packages(),
