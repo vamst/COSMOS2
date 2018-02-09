@@ -238,6 +238,14 @@ class Workflow(Base):
             # decompose `Dependency` objects to values and parents
             new_val, parent_tasks = recursive_resolve_dependency(v)
 
+            parents_flat=[]
+            for i in parents:
+                if type(i)==list:
+                    parents_flat+=i
+                else:
+                    parents_flat.append(i)
+            parents = parents_flat
+            
             params[k] = new_val
             parents.extend(parent_tasks - set(parents))
 
