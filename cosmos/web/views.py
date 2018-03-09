@@ -107,12 +107,14 @@ def gen_bprint(session):
         from ..graph.draw import pygraphviz_available
         ex = get_workflow(id)
 
-        if pygraphviz_available:
+        # if pygraphviz_available:
+        try:
             if type == 'task':
                 svg = Markup(draw_task_graph(ex.task_graph(), url=True))
             else:
                 svg = Markup(draw_stage_graph(ex.stage_graph(), url=True))
-        else:
+        # else:
+        except:
             svg = 'Pygraphviz not installed, cannot visualize.  (Usually: apt-get install graphviz && pip install pygraphviz)'
 
         return render_template('cosmos/taskgraph.html', workflow=ex, type=type,
