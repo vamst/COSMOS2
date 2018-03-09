@@ -41,7 +41,7 @@ class DRM_MXQ(DRM):
         fcmd = '{bsub} {cmd_str}'.format(
                 cmd_str=task.output_command_script_path,
                 bsub=bsub)
-            
+
         # print(fcmd)
         out = sp.check_output(
             fcmd,
@@ -61,7 +61,7 @@ class DRM_MXQ(DRM):
                 except:
                     return False
 
-                if status in ('KILLED', 'FAILED', 'FINISHED', 'EXIT'): 
+                if status in ('KILLED', 'FAILED', 'FINISHED', 'EXIT'):
                     return True
                 else:
                     return False
@@ -109,7 +109,7 @@ class DRM_MXQ(DRM):
 
 def get_gid_from_jid(jid):
     try:
-        resp =  os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e \
+        resp =  os.popen('mysql --login-path=mxq -A -D mxq -e \
             "select group_id from mxq_job where job_id={}"'.format(jid)).readlines()[-1].strip()
     except:
         resp = False
@@ -121,7 +121,7 @@ def get_gid_from_jid(jid):
 
 def get_status_from_jid(jid):
     try:
-        resp =  os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e \
+        resp =  os.popen('mysql --login-path=mxq -A -D mxq -e \
             "select job_status from mxq_job where job_id={}"'.format(jid)).readlines()[-1].strip()
     except:
         resp = '999'
@@ -137,7 +137,7 @@ def bjobs_single(jid):
     header = False
     bjobs = {}
 
-    resp =  os.popen('mysql -u ronly -p1234 -A --host mxq -D mxq -e \
+    resp =  os.popen('mysql --login-path=mxq -A -D mxq -e \
     "select * from mxq_job where job_id={}"'.format(jid)).readlines()
 
     info = dict(list(zip(resp[0].strip().split(), resp[1].strip().split())))
