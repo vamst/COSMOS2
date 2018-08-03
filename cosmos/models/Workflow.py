@@ -599,7 +599,7 @@ def _run(workflow, session, task_queue):
         for task in _process_finished_tasks(workflow.jobmanager):
             # print("Current task: {}".format(task))
             if  'dindel' in task.uid:
-                task.status == TaskStatus.successful
+                task.status = TaskStatus.successful
             if task.status == TaskStatus.failed and task.must_succeed:
 
                 if workflow.info['fail_fast']:
