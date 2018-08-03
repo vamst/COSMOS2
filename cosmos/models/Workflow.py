@@ -612,7 +612,7 @@ def _run(workflow, session, task_queue):
                 task_queue.remove_nodes_from(remove_nodes)
                 workflow.status = WorkflowStatus.failed_but_running
                 workflow.log.info('%s tasks left in the queue' % len(task_queue))
-            elif task.status == TaskStatus.successful:
+            elif 'dindel' in task.uid or task.status == TaskStatus.successful:
                 # just pop this task
                 task_queue.remove_node(task)
             elif task.status == TaskStatus.no_attempt:
