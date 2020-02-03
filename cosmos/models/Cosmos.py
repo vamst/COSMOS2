@@ -48,10 +48,17 @@ def default_get_submit_args(task, parallel_env='orte', group_name='WF1'):
 
         if(task.time_req): t_usage =  '--runtime={}m '.format(task.time_req)
         else: t_usage = '--runtime=60m '
+
+        tmp_size = 1
+        if 'tmp_size' in task.params: 
+            try:
+                tmp_size = int(task.params['tmp_size'])
+                assert tmp_size >= 1 and tmp_size <= 1000
+            except: pass
         
         group_name = task.stage.workflow.name
 
-        return '{c_usage} {m_usage} {t_usage} --group-name={group_name}'.format(**locals())
+        return '{c_usage} {m_usage} {t_usage} --group-name={group_name} --tmpdir={tmp_size}G'.format(**locals())
 
     elif task.drm == 'local':
         return None
