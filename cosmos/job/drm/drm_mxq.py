@@ -30,14 +30,9 @@ class DRM_MXQ(DRM):
 
     def submit_job(self, task):
         group_id_opt = ' -a {} '.format(task.workflow.name)
-        if task.drm_native_specification and task.drm_native_specification.isdigit():
-            tmpsize = int(task.drm_native_specification)
-            if tmpsize < 1 or tmpsize > 1000: tmpsize = 1
-        else: tmpsize = 1
 
         ns = ' ' + task.drm_native_specification if task.drm_native_specification else ''
-        bsub = 'mxqsub --tmpdir={tmpsize}G --stdout {stdout} --stderr {stderr}{ns} -a {wkname}'.format(
-            tmpsize=tmpsize,
+        bsub = 'mxqsub --stdout {stdout} --stderr {stderr}{ns} -a {wkname}'.format(
             stdout=task.output_stdout_path,
             stderr=task.output_stderr_path,
             wkname=task.workflow.name,
