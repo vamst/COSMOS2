@@ -32,7 +32,8 @@ class DRM_MXQ(DRM):
         group_id_opt = ' -a {} '.format(task.workflow.name)
 
         ns = ' ' + task.drm_native_specification if task.drm_native_specification else ''
-        bsub = 'mxqsub --stdout {stdout} --stderr {stderr}{ns} -a {wkname}'.format(
+        bsub = 'mxqsub --tmpdir={tmpsize} --stdout {stdout} --stderr {stderr}{ns} -a {wkname}'.format(
+            tmpsize=task.output_tmpsize,
             stdout=task.output_stdout_path,
             stderr=task.output_stderr_path,
             wkname=task.workflow.name,
